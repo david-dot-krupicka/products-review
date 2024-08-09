@@ -23,4 +23,4 @@ jobs:
         rancher --version
         tilt version
         skaffold version
-        tilt ci
+    - run: tilt ci
