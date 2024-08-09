@@ -20,3 +20,4 @@ jobs:
     - run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
     - run: ./k3d-with-registry.sh
     - run: tilt ci
+    - run: k3d cluster delete k3s-default
