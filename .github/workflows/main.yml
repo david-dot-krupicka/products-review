@@ -17,10 +17,10 @@ jobs:
           tilt
         tilt: 0.33.17
     - run: |
-      kubectl version --client
-      kustomize version
-      helm version
-      rancher --version
-      tilt version
-      skaffold version
-      tilt ci
+        kubectl version --client
+        kustomize version
+        helm version
+        rancher --version
+        tilt version
+        skaffold version
+        tilt ci
