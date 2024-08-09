@@ -1,5 +1,6 @@
 name: ci
 on:
+  push: { branches: [ main ] }
   pull_request:
 jobs:
   build:
@@ -8,19 +9,15 @@ jobs:
     - uses: actions/checkout@v2
     - uses: yokawasa/action-setup-kube-tools@v0.11.1
       with:
-        setup-tools: |
-          kubectl
-          helm
-          kustomize
-          skaffold
-          rancher
-          tilt
         tilt: 0.33.17
     - run: |
-      kubectl version --client
-      kustomize version
-      helm version
-      rancher --version
-      tilt version
-      skaffold version
-      tilt ci
+        kubectl version --client
+        kustomize version
+        helm version
+        rancher --version
+        tilt version
+        skaffold version
+    - run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+    - run: ./k3d-with-registry.sh
+    - run: tilt ci
+    - run: k3d cluster delete k3s-default
