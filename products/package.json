@@ -4,6 +4,7 @@
   "main": "products.ts",
   "license": "MIT",
   "scripts": {
+    "tslint": "tslint --project tsconfig.json",
     "test": "echo \"TODO: DEV Test possibilities. Error: no test specified\" && exit 1"
   },
   "dependencies": {

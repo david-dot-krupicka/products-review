@@ -13,6 +13,7 @@ ADD src .
 
 ADD package.json package.json
 ADD tsconfig.json tsconfig.json
+ADD tslint.yaml tslint.yaml
 ADD yarn.lock yarn.lock
 
 RUN yarn install

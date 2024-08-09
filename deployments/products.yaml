@@ -12,12 +12,12 @@ spec:
     metadata:
       labels:
         app: products
-        tier: web # TODO: what tier does?
+        tier: web # TODO: it's another selector
     spec:
       containers:
         - name: products
           image: products-review/products
-          command: ["/bin/bash", "./entrypoint.sh"]
+          command: ["/bin/bash", "./entrypoint.sh"] #TODO: this is ignored - Tiltfile is used
           env:
             - name: NODE_ENV
               value: development

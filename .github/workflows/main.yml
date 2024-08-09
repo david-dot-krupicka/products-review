@@ -2,6 +2,10 @@ name: ci
 on:
   push: { branches: [ main ] }
   pull_request:
+
+env:
+  GITHUB_MODE: 1
+
 jobs:
   build:
     runs-on: ubuntu-latest
