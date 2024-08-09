@@ -1,0 +1,22 @@
+name: Setup Kubernetes Tools
+  runs-on: ubuntu-latest
+  steps:
+  - uses: actions/checkout@v2
+  # You may pin to the exact commit or the version.
+  # uses: yokawasa/action-setup-kube-tools@5fe385031665158529decddddb51d6224422836e
+  - uses: yokawasa/action-setup-kube-tools@v0.11.1
+    with:
+      # tilt version
+      tilt: 0.33.17 # optional, default is 0.31.2
+  - run: |
+        kubectl version --client
+        kustomize version
+        helm version
+        kubeconform -v
+        conftest --version
+        yq --version
+        rancher --version
+        tilt version
+        skaffold version
+        kube-score version
+        tilt ci
