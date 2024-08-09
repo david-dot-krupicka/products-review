@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products
+  labels:
+    app: products
+spec:
+  selector:
+    matchLabels:
+      app: products
+  template:
+    metadata:
+      labels:
+        app: products
+        tier: web # TODO: what tier does?
+    spec:
+      containers:
+        - name: products
+          image: products-review/products
+          command: ["/bin/bash", "./entrypoint.sh"]
+          env:
+            - name: NODE_ENV
+              value: development
+            - name: PORT
+              value: "8001"
+            - name: REDIS_URL
+              value: redis://cache
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: products
+  labels:
+    app: products
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: products

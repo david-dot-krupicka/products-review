@@ -1,0 +1,15 @@
+# -*- mode: Python -*-
+
+"""
+  * Products Service
+    * Language: Node.js
+"""
+
+products_port = 8080
+
+local_resource(
+  'products',
+  'cd products && yarn install',
+  serve_cmd='cd products/src && npx nodemon ./products.ts --port %d' % (products_port),
+  deps=['products'])
+)
