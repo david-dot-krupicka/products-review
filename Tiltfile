@@ -20,23 +20,25 @@ k8s_resource('mongodb', port_forwards='27017')
 
 # Load local_resource based on whether we're running in GitHub Actions or not.
 GITHUB_MODE = os.getenv('GITHUB_MODE', 'false') == 'true'
-LINT_CMD = 'kubectl exec -it $(kubectl get pods --no-headers -o custom-columns=":metadata.name" -l app=products) -- bash -c "npm run tslint"'
+LINT_CMD = 'kubectl exec -i $(kubectl get pods --no-headers -o custom-columns=":metadata.name" -l app=products) -- bash -c "yarn eslint ."'
 
+# TODO: Move this to local Tiltfile.
 if GITHUB_MODE:
     local_resource(
-        'tslint',
+        'eslint',
         cmd=LINT_CMD,
         dir='products',
-        deps=['./products/src', './products/tslint.yaml'],
+        deps=['./products/src', './products/eslint.config.mjs'],
         resource_deps=['products'],
     )
 else:
+    # TODO: Either get rid of this or maybe make it a command button in the UI.
     local_resource(
-        'tslint',
+        'eslint',
         auto_init=False,
         cmd=LINT_CMD,
         dir='products',
-        deps=['./products/src', './products/tslint.yaml'],
+        deps=['./products/src', './products/eslint.config.mjs'],
         resource_deps=['products'],
         trigger_mode=TRIGGER_MODE_AUTO
     )
@@ -47,9 +49,10 @@ docker_build_with_restart('products-review/products', 'products',
              entrypoint='npx nodemon ./products.ts',        # TODO: do we need any --ext?
              live_update=[
                  sync('./products/src', '/app'),
+                 sync('./products/eslint.config.mjs', '/app/eslint.config.mjs'),
                  sync('./products/package.json', '/app/package.json'),
-                 sync('./products/yarn.lock', '/app/yarn.lock'),
                  sync('./products/tsconfig.json', '/app/tsconfig.json'),
+                 sync('./products/yarn.lock', '/app/yarn.lock'),
                  run('cd /app && yarn install', trigger=['./products/package.json', './products/yarn.lock']),
              ])
 
