@@ -1,8 +1,8 @@
 import express from "express";
 
 export abstract class CommonRoutes {
-    app: express.Application;
-    name: string;
+    protected name: string;
+    protected app: express.Application;
 
     protected constructor(app: express.Application, name: string) {
         this.app = app;
@@ -10,9 +10,9 @@ export abstract class CommonRoutes {
         this.configureRoutes();
     }
 
-    getName() {
+    public getName() {
         return this.name;
     }
 
-    abstract configureRoutes(): express.Application;
+    protected abstract configureRoutes(): express.Application;
 }

@@ -13,6 +13,7 @@ ADD src .
 
 ADD package.json package.json
 ADD tsconfig.json tsconfig.json
+ADD eslint.config.mjs eslint.config.mjs
 ADD yarn.lock yarn.lock
 
 RUN yarn install
