@@ -13,35 +13,23 @@ k8s_yaml([
     'deployments/redis.yaml',
 ])
 
+k8s_resource('mongodb', port_forwards='27017')
+k8s_resource('redis')
 # Port-forward services, so you can hit it them locally -- e.g. you
 # can access the 'products' service in your browser at http://localhost:8080
-k8s_resource('products', port_forwards='8000:8080')
-k8s_resource('mongodb', port_forwards='27017')
+k8s_resource('products', port_forwards='8000:8080', resource_deps=['mongodb', 'redis'])
 
-# Load local_resource based on whether we're running in GitHub Actions or not.
-GITHUB_MODE = os.getenv('GITHUB_MODE', 'false') == 'true'
+# Linting
 LINT_CMD = 'kubectl exec -i $(kubectl get pods --no-headers -o custom-columns=":metadata.name" -l app=products) -- bash -c "yarn eslint ."'
 
 # TODO: Move this to local Tiltfile.
-if GITHUB_MODE:
-    local_resource(
-        'eslint',
-        cmd=LINT_CMD,
-        dir='products',
-        deps=['./products/src', './products/eslint.config.mjs'],
-        resource_deps=['products'],
-    )
-else:
-    # TODO: Either get rid of this or maybe make it a command button in the UI.
-    local_resource(
-        'eslint',
-        auto_init=False,
-        cmd=LINT_CMD,
-        dir='products',
-        deps=['./products/src', './products/eslint.config.mjs'],
-        resource_deps=['products'],
-        trigger_mode=TRIGGER_MODE_AUTO
-    )
+local_resource(
+    'eslint',
+    cmd=LINT_CMD,
+    dir='products',
+    deps=['./products/src', './products/eslint.config.mjs'],
+    resource_deps=['products'],
+)
 
 # Service: products
 docker_build_with_restart('products-review/products', 'products',
