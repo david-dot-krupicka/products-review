@@ -4,7 +4,7 @@
   "main": "app.ts",
   "license": "MIT",
   "scripts": {
-    "test": "mocha -r ts-node/register 'tests/**/*.ts' --exit"
+    "test": "npx mocha -r ts-node/register 'tests/**/*.ts' --exit"
   },
   "dependencies": {
     "argon2": "^0.40.3",

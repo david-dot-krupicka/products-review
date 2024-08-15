@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { AuthRoutesConfig } from '../../src/auth/auth.routes.config';
+import { AuthRoutesConfig } from '../../auth/auth.routes.config';
 import express from 'express';
 
 describe('AuthRoutesConfig', () => {

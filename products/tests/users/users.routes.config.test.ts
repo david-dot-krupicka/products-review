@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { UsersRoutesConfig } from '../../src/users/users.routes.config';
+import { UsersRoutesConfig } from '../../users/users.routes.config';
 import express from 'express';
 
 describe('UsersRoutesConfig', () => {

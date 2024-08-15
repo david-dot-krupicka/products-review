@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { expect } from 'chai';
 import request from 'supertest';
-import { app, server } from '../src/app';
+import { app, server } from '../app';
 
 describe('App Initialization', () => {
     it('should return 200 on GET /', (done) => {
