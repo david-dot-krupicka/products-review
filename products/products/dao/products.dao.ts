@@ -3,6 +3,7 @@ import { PatchProductDto } from '../dto/patch.product.dto';
 
 import mongooseService from '../../common/services/mongoose.service';
 import debug from 'debug';
+import {PatchUserDto} from "../../users/dto/patch.user.dto";
 
 const log: debug.IDebugger = debug('app:products-dao');
 
@@ -29,7 +30,7 @@ class ProductsDao {
         return product._id;
     }
 
-    async getProductById(productId: string) {
+    async getProductById(productId: string | number) {
         return this.Product.findOne({ _id: productId }).exec();
     }
 
@@ -44,17 +45,17 @@ class ProductsDao {
     }
 
     async updateProductById(
-        productId: string,
+        productId: string | number,
         productFields: PatchProductDto
     ) {
         return await this.Product.findOneAndUpdate(
-            { _id: userId },
+            { _id: productId },
             { $set: productFields },
             { new: true }   // return the updated document
         ).exec();
     }
 
-    async removeProductById(productId: string) {
+    async removeProductById(productId: string | number) {
         return this.Product.deleteOne({ _id: productId }).exec();
     }
 }
