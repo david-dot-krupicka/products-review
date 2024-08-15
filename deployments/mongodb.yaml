@@ -19,7 +19,7 @@ spec:
     app: mongodb
     spec:
       containers:
-        - image: mongo:latest
+        - image: products-review/mongodb
           name: mongo
           ports:
             - name: http
@@ -27,20 +27,13 @@ spec:
               protocol: TCP
           resources:
             {}
-          env:
-            - name: MONGO_INITDB_ROOT_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: mongodb-secret
-                  key: mongo-root-username
-            - name: MONGO_INITDB_ROOT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mongodb-secret
-                  key: mongo-root-password
           volumeMounts:
             - mountPath: /data/db
               name: mongo-db-data
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/bash", "-c", "/docker-entrypoint-initdb.d/init-db.sh", "&&", "exit $?"]
       restartPolicy: Always
       volumes:
         - name: mongo-db-data
@@ -90,5 +83,4 @@ spec:
     - ReadWriteOnce
   hostPath:
     path: "/data/mongo"
-
   

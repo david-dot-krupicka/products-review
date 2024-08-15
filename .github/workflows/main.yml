@@ -6,6 +6,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_MODE: 1
     steps:
     - uses: actions/checkout@v2
     - uses: yokawasa/action-setup-kube-tools@v0.11.1
@@ -20,5 +22,6 @@ jobs:
         skaffold version
     - run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
     - run: ./k3d-with-registry.sh
-    - run: tilt ci
+    - run: if [ ! -e ./products/.env ]; then cp ./products/.env.example ./products/.env; fi
+    - run: GITHUB_MODE=$GITHUB_MODE tilt ci
     - run: k3d cluster delete k3s-default
