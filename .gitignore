@@ -24,3 +24,6 @@ api/*/*.pb.go
 # vim temp files
 .*.swp
 .*.swx
+
+node_modules
+products/.env

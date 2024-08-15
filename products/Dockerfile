@@ -11,6 +11,7 @@ WORKDIR /app
 
 ADD src .
 
+ADD .env .env
 ADD package.json package.json
 ADD tsconfig.json tsconfig.json
 ADD eslint.config.mjs eslint.config.mjs
@@ -20,4 +21,4 @@ RUN yarn install
 
 ENV PATH="$PATH:/app/node_modules/typescript/bin"
 
-ENTRYPOINT [ "npx", "nodemon", "./products.ts" ]
+ENTRYPOINT [ "npx", "nodemon", "./app.ts" ]
