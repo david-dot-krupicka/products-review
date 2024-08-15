@@ -3,7 +3,6 @@ import { PatchProductDto } from '../dto/patch.product.dto';
 
 import mongooseService from '../../common/services/mongoose.service';
 import debug from 'debug';
-import {PatchUserDto} from "../../users/dto/patch.user.dto";
 
 const log: debug.IDebugger = debug('app:products-dao');
 
