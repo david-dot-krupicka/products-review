@@ -1,6 +1,6 @@
-import { Application, Request, Response, NextFunction } from 'express';
-import { CommonRoutesConfig } from '../common/common.routes.config';
-import ProductsController from './controllers/products.controller';
+import { Application } from "express";
+import { CommonRoutesConfig } from "../common/common.routes.config";
+import ProductsController from "./controllers/products.controller";
 import ProductsMiddleware from "./middleware/products.middleware";
 
 export class ProductsRoutesConfig extends CommonRoutesConfig {
