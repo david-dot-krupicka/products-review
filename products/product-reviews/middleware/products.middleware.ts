@@ -15,14 +15,14 @@ class ProductsMiddleware {
     }
 
     async validateProductExists(req: Request, res: Response, next: NextFunction) {
-        const product = await productsService.readById(req.params.productId);
+        const product = await productsService.readById(req.body.productId);
         if (product) {
             // Cache the product in the request
             // res.locals.product = product;
             next();
         } else {
             res.status(404).send({
-                error: `Product ${req.params.productId} not found`,
+                error: `Product ${req.body.productId} not found`,
             });
         }
     }

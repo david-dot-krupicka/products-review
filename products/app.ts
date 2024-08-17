@@ -16,7 +16,7 @@ import debug from "debug";
 import { CommonRoutesConfig } from "./common/common.routes.config";
 import { AuthRoutesConfig } from "./auth/auth.routes.config";
 import { UsersRoutesConfig } from "./users/users.routes.config";
-import { ProductsRoutesConfig } from "./product-reviews/products.routes.config";
+import { ProductReviewsRoutesConfig } from "./product-reviews/product-reviews.routes.config";
 
 const app: express.Application = express(),
       port = "8080",
@@ -52,7 +52,7 @@ app.use(expressWinston.logger(loggerOptions));
 // after sending the Express.js application object to have the routes added to our app!
 routes.push(new AuthRoutesConfig(app));
 routes.push(new UsersRoutesConfig(app));
-routes.push(new ProductsRoutesConfig(app));
+routes.push(new ProductReviewsRoutesConfig(app));
 
 // this is a simple route to make sure everything is working properly
 const runningMessage = `Server running at http://localhost:${port}`;
