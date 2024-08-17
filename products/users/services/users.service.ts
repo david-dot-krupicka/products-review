@@ -9,7 +9,7 @@ class UsersService implements CRUD {
         return UsersDao.addUser(resource);
     }
 
-    async readById(id: string) {
+    async readById(id: string | number) {
         return UsersDao.getUserById(id);
     }
 
@@ -25,15 +25,15 @@ class UsersService implements CRUD {
         return UsersDao.getUsers(limit, page);
     }
 
-    async patchById(id: string, resource: PatchUserDto) {
+    async patchById(id: string | number, resource: PatchUserDto) {
         return UsersDao.updateUserById(id, resource);
     }
 
-    async putById(id: string, resource: PutUserDto) {
+    async putById(id: string | number, resource: PutUserDto) {
         return UsersDao.updateUserById(id, resource);
     }
 
-    async deleteById(id: string) {
+    async deleteById(id: string | number) {
         return UsersDao.removeUserById(id);
     }
 }

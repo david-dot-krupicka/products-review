@@ -48,7 +48,7 @@ class UsersDao {
             .exec();
     }
 
-    async getUserById(userId: string) {
+    async getUserById(userId: string | number) {
         return this.User.findOne({ _id: userId }).exec();
     }
 
@@ -61,7 +61,7 @@ class UsersDao {
     }
 
     async updateUserById(
-        userId: string,
+        userId: string | number,
         userFields: PatchUserDto | PutUserDto
     ) {
         const existingUser = await this.User.findOneAndUpdate(
@@ -73,7 +73,7 @@ class UsersDao {
         return existingUser;
     }
 
-    async removeUserById(userId: string) {
+    async removeUserById(userId: string | number) {
         return this.User.deleteOne({ _id: userId }).exec();
     }
 }
