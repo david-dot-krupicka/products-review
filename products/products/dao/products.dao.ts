@@ -10,7 +10,7 @@ class ProductsDao {
     Schema = mongooseService.getMongoose().Schema;
 
     productSchema = new this.Schema({
-        name: String,
+        name: { type: String, unique: true },
         description: String,
         price: Number,
     });
@@ -25,12 +25,19 @@ class ProductsDao {
         const product = new this.Product({
             ...productFields,
         });
+        // Add try catch here and return the error properly
         await product.save();
         return product._id;
     }
 
     async getProductById(productId: string | number) {
-        return this.Product.findOne({ _id: productId }).exec();
+        return this.Product.findOne({ _id: productId })
+            .select('_id name description price')
+            .exec();
+    }
+
+    async getProductByName(productName: string) {
+        return this.Product.findOne({ name: productName }).exec();
     }
 
     // Pagination

@@ -12,6 +12,10 @@ class ProductsService implements CRUD {
         return ProductsDao.getProductById(id);
     }
 
+    async readByName(name: string) {
+        return ProductsDao.getProductByName(name);
+    }
+
     async list(limit: number, page: number) {
         return ProductsDao.getProducts(limit, page);
     }

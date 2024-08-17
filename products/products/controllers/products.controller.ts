@@ -11,7 +11,7 @@ class ProductsController {
     }
 
     async getProductById(req: Request, res: Response) {
-        const product = await productsService.readById(req.body.id);
+        const product = await productsService.readById(req.body.productId);
         log("Fetched product");
         log(product);
         res.status(200).send(product);
@@ -24,13 +24,13 @@ class ProductsController {
 
     // 204 Ref. RFC 7231: https://tools.ietf.org/html/rfc7231#section-6.3.5
     async patchProduct(req: Request, res: Response) {
-        log(await productsService.patchById(req.body.id, req.body));
+        log(await productsService.patchById(req.body.productId, req.body));
         res.status(204).send();
     }
 
     // 204 Ref. RFC 7231: https://tools.ietf.org/html/rfc7231#section-6.3.5
     async removeProduct(req: Request, res: Response) {
-        log(await productsService.deleteById(req.body.id));
+        log(await productsService.deleteById(req.body.productId));
         res.status(204).send();
     }
 }

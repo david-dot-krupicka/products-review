@@ -1,6 +1,7 @@
 import { Application, Request, Response, NextFunction } from 'express';
 import { CommonRoutesConfig } from '../common/common.routes.config';
 import ProductsController from './controllers/products.controller';
+import ProductsMiddleware from "./middleware/products.middleware";
 
 export class ProductsRoutesConfig extends CommonRoutesConfig {
     constructor(app: Application) {
@@ -10,31 +11,23 @@ export class ProductsRoutesConfig extends CommonRoutesConfig {
     protected configureRoutes() {
 
         this.app.route(`/products`)
-            .get(async (req: Request, res: Response) => {
-                await ProductsController.listProducts(req, res);
-            })
-            .post(async (req: Request, res: Response) => {
-                // TODO: middleware to validate request
-                await ProductsController.createProduct(req, res);
-            });
+            .get(ProductsController.listProducts)
+            .post(
+                ProductsMiddleware.validateRequiredProductBodyFields,
+                ProductsMiddleware.validateProductWithSameNameExists,
+                ProductsController.createProduct
+            );
 
-        // TODO: Extract id to param?
-        this.app.route(`/products/:productId`)
-            .all((req: Request, res: Response, next: NextFunction) => {
-                // TODO: middleware to validate request
-                next();
-            })
-            .get(async (req: Request, res: Response) => {
-                await ProductsController.getProductById(req, res);
-            })
-            .delete(async (req: Request, res: Response) => {
-                await ProductsController.removeProduct(req, res);
-            });
-
-        this.app.patch(`/products/:productId`, async (req: Request, res: Response) => {
-            // TODO: middleware different validation?
-            await ProductsController.patchProduct(req, res);
-        });
+        this.app.param(`productId`, ProductsMiddleware.extractProductId);
+        this.app
+            .route(`/products/:productId`)
+            .all(ProductsMiddleware.validateProductExists)
+            .get(ProductsController.getProductById)
+            .delete(ProductsController.removeProduct)
+            .patch(
+                ProductsMiddleware.validatePatchProductName,
+                ProductsController.patchProduct
+            );
 
         return this.app;
     }
