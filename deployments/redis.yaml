@@ -5,7 +5,7 @@ metadata:
   labels:
     app: redis
 spec:
-  replicas: 1 # TODO: how this works?
+  replicas: 1
   selector:
     matchLabels:
       app: redis
@@ -15,14 +15,14 @@ spec:
     metadata:
       labels:
         app: redis
-        tier: cache # TODO: what is this?
+        tier: cache
     app: redis
     spec:
       containers:
         - image: redis
           name: redis
           ports:
-            - containerPort: 8001
+            - containerPort: 6379
               protocol: TCP
           volumeMounts:
             - mountPath: /data/redis
@@ -40,8 +40,9 @@ metadata:
 spec:
   ports:
     - name: redis-port
-      port: 8001
-      targetPort: 8001
+      protocol: TCP
+      port: 6379
+      #targetPort: 6379
   selector:
     app: redis
 ---

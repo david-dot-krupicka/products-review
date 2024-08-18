@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: reviews
+  labels:
+    app: reviews
+spec:
+  serviceName: reviews
+  # TODO: use helm charts
+  replicas: 5
+  selector:
+    matchLabels:
+      app: reviews
+  template:
+    metadata:
+      labels:
+        app: reviews
+        tier: backend
+    spec:
+      containers:
+        - name: reviews
+          image: products-review/reviews
+          ports:
+            - containerPort: 8002
+              protocol: TCP
+          # TODO: this is ignored - Tiltfile is used
+          command: ["/bin/bash", "-c", "while true; do echo $HOSTNAME ': Hello, Kubernetes!'; sleep 10; done"]
+          envFrom:
+            - configMapRef:
+                name: common-env
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reviews
+  labels:
+    app: reviews
+spec:
+  ports:
+    - name: http
+      port: 8002
+      targetPort: 8002
+      protocol: TCP
+  selector:
+    app: products

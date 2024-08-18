@@ -2,6 +2,7 @@ import { CreateReviewDto } from '../dto/create.review.dto';
 import { PatchReviewDto } from '../dto/patch.review.dto';
 
 import mongooseService from '../../common/services/mongoose.service';
+import bullmqService from '../../common/services/bullmq.service';
 import debug from 'debug';
 
 const log: debug.IDebugger = debug('app:reviews-dao');
@@ -19,16 +20,32 @@ class ReviewsDao {
     }).index({ userId: 1, productId: 1 }, { unique: true }); // Compound index
 
     Reviews = mongooseService.getMongoose().model('Reviews', this.reviewSchema);
+    // TODO: test only, should be more queues based on totalShards count
+    //Queue = bullmqService.getQueues();
+
     constructor() {
         log('Created new instance of ReviewsDao.');
     }
 
     async addReview(reviewFields: CreateReviewDto) {
-        const review = new this.Reviews({
+        const
+            review = new this.Reviews({
             ...reviewFields,
-        });
-        // Add try catch here and return the error properly
+        }),
+            queue = bullmqService.getQueues();
+
+        // TODO: Add try catch here and return the error properly
         await review.save();
+        // Add the job to the queue
+        log("Adding job to the queue");
+        await bullmqService.addJob('review-' + review._id);
+        log("Getting jobs from the queue");
+        const jobs = bullmqService.getJobs().then(
+            (jobs) => {
+                log(jobs);
+            }
+        );
+
         return review._id;
     }
 

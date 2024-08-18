@@ -18,13 +18,9 @@ spec:
         - name: products
           image: products-review/products
           command: ["/bin/bash", "./entrypoint.sh"] #TODO: this is ignored - Tiltfile is used
-          env:
-            - name: NODE_ENV
-              value: development
-            - name: PORT
-              value: "8001"
-            - name: REDIS_URL
-              value: redis://cache
+          envFrom:
+            - configMapRef:
+                name: common-env
           ports:
             - containerPort: 8080
               protocol: TCP
