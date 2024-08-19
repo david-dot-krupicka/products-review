@@ -1,5 +1,6 @@
 import { CreateReviewDto } from '../dto/create.review.dto';
 import { PatchReviewDto } from '../dto/patch.review.dto';
+import { JobData, JobDataDefinition } from '../../common/types/jobdata';
 
 import mongooseService from '../../common/services/mongoose.service';
 import bullmqService from '../../common/services/bullmq.service';
@@ -16,10 +17,19 @@ class ReviewsDao {
         firstName: String,
         lastName: String,
         text: String,
-        rating: Number,
+        rating: { type: Number, min: 1, max: 5 },
     }).index({ userId: 1, productId: 1 }, { unique: true }); // Compound index
 
     Reviews = mongooseService.getMongoose().model('Reviews', this.reviewSchema);
+
+    // By this, I am trying to pass the correct schema to work on.
+    // It could be done in a better way.
+    JobDefinition: JobDataDefinition = {
+        collectionName: 'reviews',
+        productIdFieldName: 'productId',
+        ratingFieldName: 'rating',
+    }
+
     // TODO: test only, should be more queues based on totalShards count
     //Queue = bullmqService.getQueues();
 
@@ -27,50 +37,86 @@ class ReviewsDao {
         log('Created new instance of ReviewsDao.');
     }
 
-    async addReview(reviewFields: CreateReviewDto) {
-        const
-            review = new this.Reviews({
-            ...reviewFields,
-        }),
-            queue = bullmqService.getQueues();
+    private async addReviewJob(review: any) {
+        const jobData: JobData = {
+            definition: this.JobDefinition,
+            productId: review.productId,
+        };
+        await bullmqService.addJob('average-' + review._id, jobData);
 
-        // TODO: Add try catch here and return the error properly
-        await review.save();
-        // Add the job to the queue
-        log("Adding job to the queue");
-        await bullmqService.addJob('review-' + review._id);
+        // TODO: delete jobs (completed, failed)...
+        /*
         log("Getting jobs from the queue");
         const jobs = bullmqService.getJobs().then(
             (jobs) => {
                 log(jobs);
             }
         );
+        */
+    }
 
-        return review._id;
+    async addReview(reviewFields: CreateReviewDto) {
+        try {
+            const review = new this.Reviews({
+                ...reviewFields,
+            });
+            await review.save();
+            await this.addReviewJob(review);
+
+            return review._id;
+        } catch (error) {
+            log('Error saving review: ', error);
+            throw error;
+        }
     }
 
     // TODO: maybe only for debugging?
     async getReviewById(reviewId: string | number) {
-        return this.Reviews.findOne({ _id: reviewId }).exec();
+        try {
+            return this.Reviews.findOne({_id: reviewId}).exec();
+        } catch (error) {
+            log('Error getting review by id: ', error);
+            throw error;
+        }
     }
 
     async getReviewByUserIdProductId(userId: string, productId: string ) {
-        return this.Reviews.findOne({userId: userId, productId: productId }).exec();
+        try {
+            return this.Reviews.findOne({userId: userId, productId: productId}).exec();
+        } catch (error) {
+            log('Error getting review by user id and product id: ', error);
+            throw error;
+        }
     }
 
     async updateReviewById(
         reviewId: string | number,
         reviewFields: PatchReviewDto
     ) {
-        return await this.Reviews.findOneAndUpdate(
-            { _id: reviewId },
-            { $set: reviewFields },
-            { new: true }   // return the updated document
-        ).exec();
+        try {
+            const review = await this.Reviews.findOneAndUpdate(
+                {_id: reviewId},
+                {$set: reviewFields},
+                {new: true}   // return the updated document
+            ).exec();
+            await this.addReviewJob(review);
+            return review;
+        } catch (error) {
+            log('Error updating review by id: ', error);
+            throw error;
+        }
     }
 
     async removeReviewById(reviewId: string | number) {
-        return this.Reviews.deleteOne({ _id: reviewId }).exec();
+        try {
+            const review = await this.getReviewById(reviewId);
+            const deleteResult = await this.Reviews.deleteOne({_id: reviewId}).exec();
+            await this.addReviewJob(review);
+            return deleteResult;
+        } catch (error) {
+            log('Error removing review by id: ', error);
+            throw error;
+        }
     }
 }
 

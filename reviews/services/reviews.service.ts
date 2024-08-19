@@ -1,10 +1,6 @@
-/*
-import ReviewsDao from '../dao/reviews.dao';
-import { CRUD } from '../../common/interfaces/crud.interface';
-import { CreateReviewDto } from '../dto/create.review.dto';
-import { PatchReviewDto } from '../dto/patch.review.dto';
-*/
-import { Worker } from 'bullmq';
+import { Worker, Job } from 'bullmq';
+import { JobData, JobDataDefinition, JobResult } from '../types/jobdata';
+import mongooseService from './mongoose.service';
 import debug from 'debug';
 
 const
@@ -12,17 +8,21 @@ const
     log: debug.IDebugger = debug(`app-${hostname}:reviews-service`);
 
 class ReviewsService {
-    reviewWorker!: Worker;
+    private worker!: Worker<JobData>;
+    private mongoose = mongooseService.getMongoose();
 
     constructor() {
+        log('Created new instance of ReviewsService.');
         try {
-            this.reviewWorker = new Worker(
-               'reviewQueue',
-               async (job) => {
+            this.worker = new Worker<JobData>(
+                'reviewQueue',
+                async (job: Job<JobData>) => {
                     log(`Processing job ${job.id} of type ${job.name}`);
-                    log(job.data);
+
+                    const { definition, productId} = job.data;
+                    return await this.calculateAverageRating(definition, productId);
                 },
-               {
+                {
                     connection: {
                         host: 'redis',
                         port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379,
@@ -33,33 +33,34 @@ class ReviewsService {
             log('Error connecting to Redis', error);
         }
     }
-    async logFromService() {
-       return log("Hello from ReviewsService");
-    }
 
-    /*
-    async create(resource: CreateReviewDto) {
-        return ReviewsDao.addReview(resource);
-    }
+    private async calculateAverageRating(definition: JobDataDefinition, productId: string) {
+        try {
+            const reviewsCollection = this.mongoose.connection.collection(definition.collectionName);
+            const result = await reviewsCollection.aggregate([
+                {
+                    $match: { [definition.productIdFieldName]: productId }
+                },
+                {
+                    $group: {
+                        _id: '$' + definition.productIdFieldName,
+                        avgRating: { $avg: '$' + definition.ratingFieldName }
+                    }
+                },
+                {
+                    $addFields: {
+                        avgRatingRounded: { $round: ['$avgRating', 2] },
+                    }
+                }
+            ]).toArray();
 
-    async readById(id: string | number) {
-        return ReviewsDao.getReviewById(id);
+            log('Result', result[0]);
+            return result[0] as JobResult;
+        } catch (error) {
+            log('Error processing job', error);
+            throw error;
+        }
     }
-
-    async readByUserIdProductId(id: string, productId: string ) {
-        return ReviewsDao.getReviewByUserIdProductId(id, productId);
-    }
-
-    async patchById(id: string | number, resource: PatchReviewDto) {
-        return ReviewsDao.updateReviewById(id, resource);
-    }
-
-    async deleteById(id: string | number) {
-        return ReviewsDao.removeReviewById(id);
-    }
-    */
-
-    /* comment */
 }
 
-export default new ReviewsService();
+export default ReviewsService;

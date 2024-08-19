@@ -1,7 +1,9 @@
 import mongoose from 'mongoose';
 import debug from 'debug';
 
-const log: debug.IDebugger = debug('app:mongoose-service');
+const
+    hostname: string = process.env["HOSTNAME"] || "",
+    log: debug.IDebugger = debug(`app-${hostname}:mongoose-service`);
 
 class MongooseService {
     private count = 0;
