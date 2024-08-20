@@ -1,4 +1,5 @@
 import { Application } from "express";
+import AsyncHandler from "express-async-handler";
 import { CommonRoutesConfig } from "../common/common.routes.config";
 import ProductsController from "./controllers/products.controller";
 import ProductsMiddleware from "./middleware/products.middleware";
@@ -13,11 +14,11 @@ export class ProductReviewsRoutesConfig extends CommonRoutesConfig {
     protected configureRoutes() {
         // TODO: middleware require valid JWT token and decoded userId to create a review
         this.app.route(`/products`)
-            .get(ProductsController.listProducts)
+            .get(AsyncHandler(ProductsController.listProducts))
             .post(
-                ProductsMiddleware.validateRequiredProductBodyFields,
-                ProductsMiddleware.validateProductWithSameNameExists,
-                ProductsController.createProduct
+                AsyncHandler(ProductsMiddleware.validateRequiredProductBodyFields),
+                AsyncHandler(ProductsMiddleware.validateProductWithSameNameExists),
+                AsyncHandler(ProductsController.createProduct)
             );
 
         this.app.param(`productId`, ProductsMiddleware.extractProductId);

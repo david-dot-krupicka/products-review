@@ -9,7 +9,7 @@ class UsersService implements CRUD {
         return UsersDao.addUser(resource);
     }
 
-    async readById(id: string | number) {
+    async readById(id: string | undefined) {
         return UsersDao.getUserById(id);
     }
 

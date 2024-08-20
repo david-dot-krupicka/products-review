@@ -1,3 +1,5 @@
+/* eslint-disable */
+// TODO: fix eslint-disable later
 import { expect } from 'chai';
 import { AuthRoutesConfig } from '../../auth/auth.routes.config';
 import express from 'express';

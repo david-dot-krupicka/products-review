@@ -48,7 +48,7 @@ class UsersDao {
             .exec();
     }
 
-    async getUserById(userId: string | number) {
+    async getUserById(userId: string | undefined) {
         return this.User.findOne({ _id: userId }).exec();
     }
 

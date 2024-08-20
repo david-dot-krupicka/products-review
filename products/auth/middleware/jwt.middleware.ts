@@ -2,6 +2,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { Jwt } from '../../common/types/jwt';
+import * as httpUsers from "../../users/types/http.users";
 import usersService from '../../users/services/users.service';
 
 // @ts-expect-error
@@ -49,11 +50,11 @@ class JwtMiddleware {
         }
     }
 
-    validJWTNeeded(
+    validJWTNeeded = (
         req: express.Request,
         res: express.Response,
         next: express.NextFunction
-    ) {
+    ) => {
         if (req.headers.authorization) {
             try {
                 const authorization = req.headers.authorization.split(' ');

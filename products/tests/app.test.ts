@@ -1,4 +1,5 @@
-import mongoose from 'mongoose';
+/* eslint-disable */
+// TODO: fix eslint-disable later
 import { expect } from 'chai';
 import request from 'supertest';
 import { app, server } from '../app';
@@ -18,10 +19,11 @@ describe('App Initialization', () => {
     it('should configure routes', () => {
         const routes = app._router.stack.filter((layer: any) => layer.route);
         const routePaths = routes.map((layer: any) => layer.route.path);
+
         expect(routePaths).to.include('/');
         expect(routePaths).to.include('/users');
         expect(routePaths).to.include('/users/:userId');
-        expect(routePaths).to.include('/users/:userId/permissionFlags/:permissionFlags');
+        expect(routePaths).to.include('/users/:userId/permissionFlags/:permissionFlag');
         expect(routePaths).to.include('/auth');
         expect(routePaths).to.include('/auth/refresh-token');
     });

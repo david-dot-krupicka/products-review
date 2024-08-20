@@ -5,7 +5,7 @@ export interface CRUD {
     list?: (limit: number, page: number, id?: string | number | undefined) => Promise<any>;
     create: (resource: any) => Promise<any>;
     putById?: (id: string, resource: any) => Promise<any>;
-    readById: (id: string | number) => Promise<any>;
+    readById: (id: string) => Promise<any>;
     deleteById: (id: string | number) => Promise<any>;
     patchById: (id: string | number, resource: any) => Promise<any>;
 }

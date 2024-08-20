@@ -1,29 +1,29 @@
 import express from 'express';
+import * as httpUsers from '../types/http.users';
 import userService from '../services/users.service';
 import debug from 'debug';
 
 const log: debug.IDebugger = debug('app:users-controller');
 
 class UsersMiddleware {
-    async validateSameEmailDoesntExist(
-        req: express.Request,
+    validateSameEmailDoesntExist = async (
+        req: httpUsers.CreateUserRequest,
         res: express.Response,
         next: express.NextFunction
-    ) {
-        const user = await userService.getUserByEmail(req.body.email);
-        if (user) {
-            res.status(400).send({ error: `User email already exists` });
-        } else {
-            next();
-        }
+    ) => {
+        await userService.getUserByEmail(req.body.email).then(() => {
+            res.status(400).send({error: `User email already exists`});
+        }).catch((error: unknown) => {
+            next(error);
+        })
     }
 
-    async validateSameEmailBelongToSameUser(
-        req: express.Request,
-        res: express.Response,
+    validateSameEmailBelongToSameUser = (
+        req: httpUsers.PutUserRequest | httpUsers.PatchUserRequest,
+        res: httpUsers.UserLocalsResponse,
         next: express.NextFunction
-    ) {
-        if (res.locals.user._id === req.params.userId) {
+    ) => {
+        if (res.locals.user && res.locals.user._id === req.params.userId) {
             next();
         } else {
             res.status(400).send({ error: `Invalid email` });
@@ -31,8 +31,8 @@ class UsersMiddleware {
     }
 
     // Here we need to use an arrow function to bind `this` correctly
-    validatePatchEmail = async (
-        req: express.Request,
+    validatePatchEmail = (
+        req: httpUsers.PutUserRequest | httpUsers.PatchUserRequest,
         res: express.Response,
         next: express.NextFunction
     ) => {
@@ -45,39 +45,46 @@ class UsersMiddleware {
         }
     };
 
-    async validateUserExists(
-        req: express.Request,
+    validateUserExists = async (
+        req: httpUsers.UserByIdParamsRequest,
         res: express.Response,
         next: express.NextFunction
-    ) {
-        const user = await userService.readById(req.params.userId);
-        if (user) {
-            res.locals.user = user;
-            next();
+    ) => {
+        if (req.params.userId) {
+            const user = await userService.readById(req.params.userId);
+            if (user) {
+                res.locals.user = user;
+                next();
+            } else {
+                res.status(404).send({
+                    error: `User ${req.params.userId} not found`,
+                });
+            }
         } else {
-            res.status(404).send({
-                error: `User ${req.params.userId} not found`,
+            res.status(400).send({
+                error: `Missing userId`,
             });
         }
     }
 
     // Put userId into the request body
-    async extractUserId(
-        req: express.Request,
+    extractUserId = (
+        req: httpUsers.UserByIdBodyRequest,
         res: express.Response,
         next: express.NextFunction
-    ) {
+    ) => {
         req.body.id = req.params.userId;
         next();
     }
 
-    async userCantChangePermission(
-        req: express.Request,
-        res: express.Response,
+    userCantChangePermission = (
+        req: httpUsers.PutUserRequest | httpUsers.PatchUserRequest,
+        res: httpUsers.UserLocalsResponse,
         next: express.NextFunction
-    ) {
+    ) => {
         if (
             'permissionFlags' in req.body &&
+            res.locals.user !== undefined &&
             req.body.permissionFlags !== res.locals.user.permissionFlags
         ) {
             res.status(400).send({

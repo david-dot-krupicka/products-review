@@ -1,5 +1,6 @@
 import express from 'express';
 import { PermissionFlag } from './common.permissionflag.enum';
+import { UserByIdRequest, UpdatePermissionsRequest } from '../../users/types/http.users';
 import debug from 'debug';
 
 const log: debug.IDebugger = debug('app:common-permission-middleware');
@@ -7,7 +8,7 @@ const log: debug.IDebugger = debug('app:common-permission-middleware');
 class CommonPermissionMiddleware {
     permissionFlagRequired(requiredPermissionFlag: PermissionFlag) {
         return (
-            req: express.Request,
+            req: UserByIdRequest,
             res: express.Response,
             next: express.NextFunction
         ) => {
@@ -26,23 +27,23 @@ class CommonPermissionMiddleware {
         };
     }
 
-    async onlySameUserOrAdminCanDoThisAction(
-        req: express.Request,
+    onlySameUserOrAdminCanDoThisAction = (
+        req: UserByIdRequest | UpdatePermissionsRequest,
         res: express.Response,
         next: express.NextFunction
-    ) {
+    ) => {
         const userPermissionFlags = parseInt(res.locals.jwt.permissionFlags);
         if (
             req.params &&
             req.params.userId &&
             req.params.userId === res.locals.jwt.userId
         ) {
-            next(); return;
+            next();
         } else {
             if (userPermissionFlags & PermissionFlag.ADMIN_PERMISSION) {
-                next(); return;
+                next();
             } else {
-                return res.status(403).send();
+                res.status(403).send();
             }
         }
     }
