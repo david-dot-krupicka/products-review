@@ -51,9 +51,8 @@ class ProductsDao {
     async getProductById(productId: string) {
         try {
             const product = await this.Product.findOne({_id: productId})
-                .select('_id name description price')
+                .select('_id name description price averageRating')
                 .exec();
-            log('Found product: ', product);
             return product;
         } catch (error) {
             log('Error getting product by id: ', error);
@@ -64,7 +63,6 @@ class ProductsDao {
     async getProductByName(productName: string) {
         try {
             const product = await this.Product.findOne({name: productName}).exec();
-            log('Found product: ', product);
             return product;
         } catch (error) {
             log('Error getting product by name: ', error);
@@ -79,9 +77,8 @@ class ProductsDao {
                 .limit(limit)
                 .skip(limit * page)
                 // TODO: Here we could have a join with reviews collection
-                .select('_id name')
+                .select('name description price averageRating')
                 .exec();
-            log('Found product list');
             return products;
         } catch (error) {
             log('Error getting products: ', error);

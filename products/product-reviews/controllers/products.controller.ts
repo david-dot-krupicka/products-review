@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import * as httpProducts from '../types/http.products';
 import productsService from '../services/products.service';
+import redisClient from '../config/redis.config';
 import debug from 'debug';
 
 const log: debug.IDebugger = debug('app:products-controller');
@@ -10,7 +11,10 @@ class ProductsController {
 
     listProducts = async (req: Request, res: Response) => {
         try {
-            const products = await productsService.list(100, 0);
+            // TODO: Setting page and limit not implemented
+            const limit = 100, page = 0;
+            const products = await productsService.list(limit, page);
+
             res.status(200).send(products);
         } catch (error) {
             log(error);
@@ -21,9 +25,15 @@ class ProductsController {
     getProductById = async (req: httpProducts.ProductByIdRequest, res: Response) =>{
         try {
             const product = await productsService.readById(req.body.productId);
-            log("Fetched product");
-            log(product);
-            res.status(200).send(product);
+
+            if (product) {
+                await redisClient.set(`product-${req.body.productId}`, JSON.stringify(product), {
+                    EX: 3600 // Cache for 1 hour
+                });
+                res.status(200).send(product);
+            } else {
+                res.status(404).send({ error: `Product ${req.body.productId} not found` });
+            }
         } catch (error) {
             log(error);
             res.status(500).send(ProductsController.internalErrorMessage);
@@ -44,6 +54,7 @@ class ProductsController {
     patchProduct = async (req: httpProducts.PatchProductRequest, res: Response)=> {
         try {
             log(await productsService.patchById(req.body.productId, req.body));
+            await redisClient.del(`product-${req.body.productId}`); // Invalidate cache
             res.status(204).send();
         } catch (error) {
             log(error);
@@ -55,6 +66,7 @@ class ProductsController {
     removeProduct = async (req: httpProducts.ProductByIdRequest, res: Response)=> {
         try {
             log(await productsService.deleteById(req.body.productId));
+            await redisClient.del(`product-${req.body.productId}`); // Delete from cache
             res.status(204).send();
         } catch (error) {
             log(error);

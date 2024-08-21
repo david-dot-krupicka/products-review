@@ -8,6 +8,10 @@ class ReviewsService implements CRUD {
         return ReviewsDao.addReview(resource);
     }
 
+    async list(limit: number, page: number, id: string | undefined) {
+        return ReviewsDao.listReviews(limit, page, id);
+    }
+
     async readById(id: string) {
         return ReviewsDao.getReviewById(id);
     }
@@ -18,22 +22,13 @@ class ReviewsService implements CRUD {
 
     async patchById(
         id: string,
-        resource: PatchReviewDto,
-        productId?: string,    // TODO: Should be mongoose Types.ObjectId
+        resource: PatchReviewDto
     ) {
-        if (productId !== undefined) {
-            return ReviewsDao.updateReviewById(id, resource, productId);
-        } else {
-            throw new Error('productId is required');
-        }
+        return ReviewsDao.updateReviewById(id, resource);
     }
 
-    async deleteById(id: string, productId?: string) {
-        if (productId !== undefined) {
-            return ReviewsDao.removeReviewById(id, productId);
-        } else {
-            throw new Error('productId is required');
-        }
+    async deleteById(id: string) {
+        return ReviewsDao.removeReviewById(id);
     }
 }
 

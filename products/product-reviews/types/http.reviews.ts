@@ -34,6 +34,11 @@ export interface ReviewByIdRequest extends Request {
     params: ReviewIdParams
     body: ReviewIdBody
 }
+export interface ReviewsByProductIdBodyRequest extends Request {
+    body: {
+        productId: string
+    }
+}
 // -------------------------------------------------------------
 export interface ReviewIdPatchBody extends ReviewIdBody {
     productId?: Types.ObjectId;

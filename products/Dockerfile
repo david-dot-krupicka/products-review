@@ -15,6 +15,9 @@ ADD . .
 
 RUN yarn install
 
+# Install Redis server
+RUN apt-get update && apt-get install -y redis-server
+
 ENV PATH="$PATH:/app/node_modules/typescript/bin"
 
 RUN bash -c '[[ -n $GITHUB_MODE ]] && yarn test' || echo Skipping tests
