@@ -1,4 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
+import {NextFunction, Response} from 'express';
+import * as httpReviews from '../types/http.reviews';
 import reviewsService from '../services/reviews.service';
 import debug from 'debug';
 
@@ -25,7 +26,11 @@ class ReviewsMiddleware {
     }
     */
 
-    async validateUserReviewForProductExists(req: Request, res: Response, next: NextFunction) {
+    validateUserReviewForProductExists = async (
+        req: httpReviews.CreateReviewsRequest,
+        res: Response,
+        next: NextFunction
+    )=> {
         const review = await reviewsService.readByUserIdProductId(req.body.userId, req.body.productId);
         if (review) {
             res.status(400).send({ error: `User already reviewed this product` });
@@ -34,35 +39,75 @@ class ReviewsMiddleware {
         }
     }
 
-    async validateReviewExists(req: Request, res: Response, next: NextFunction) {
-        const review = await reviewsService.readById(req.body.reviewId);
+    validateReviewExists = async (
+        req: httpReviews.ReviewByIdParamsRequest,
+        res: Response,
+        next: NextFunction
+    )=> {
+        const review = await reviewsService.readById(req.params.reviewId);
         if (review) {
             // Cache the product in the request
             // res.locals.product = product;
             next();
         } else {
             res.status(404).send({
-                error: `Review ${req.body.reviewId} not found`,
+                error: `Review ${req.params.reviewId} not found`,
             });
         }
     }
 
-    async filterDtoFields(req: Request, res: Response, next: NextFunction) {
-        // TODO: Unfortunately, I didn't find suitable way to filter fields in the DTO,
-        // TODO: as it is interface. Could be implemented as a class.
-        // TODO: It's needed to disallow updating productId, for example.
-        const allowedFields = ['reviewId', 'text', 'rating'];
-        for (const key in req.body) {
-            if (req.body.hasOwnProperty(key) && !allowedFields.includes(key)) {
-                log('Deleting field', key);
-                delete req.body[key];
-            }
+    saveProductId = (
+        req: httpReviews.PatchReviewRequest,
+        res: Response,
+        next: NextFunction
+    )=> {
+        if (req.body.productId !== undefined) {
+            res.locals.productId = req.body.productId;
         }
         next();
     }
 
+    filterDtoFields = (
+        req: httpReviews.PatchReviewRequest,
+        res: Response,
+        next: NextFunction
+    )=> {
+        /*
+            TODO: Unfortunately, I didn't find suitable way to filter superfluous fields in the DTO,
+            TODO: as it is interface. Could be implemented as a class.
+            TODO: It's needed to disallow updating productId, for example.
+            TODO
+            TODO: Figure out if it's needed and find a way to implement it
+         */
+        const allowedKeys: string[] = [
+            "reviewId",
+            "text",
+            "rating"
+        ];
+        const tempDict = {} as httpReviews.ReviewIdPatchBody;
+
+        log('Removing superfluous fields from request body.');
+        log('Original request body: ', req.body);
+        allowedKeys.forEach((key) => {
+            if (
+                Object.prototype.hasOwnProperty.call(req.body, key) &&
+                req.body[key] !== undefined
+            ) {
+                tempDict[key] = req.body[key];
+            }
+        });
+        req.body = tempDict;
+
+        log('Updated request body: ', req.body);
+        next();
+    }
+
     // Put productId into the request body
-    async extractReviewId(req: Request, res: Response, next: NextFunction) {
+    extractReviewId = (
+        req: httpReviews.ReviewByIdBodyRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         req.body.reviewId = req.params.reviewId;
         next();
     }

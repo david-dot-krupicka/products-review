@@ -40,7 +40,6 @@ app.get("/", (req: express.Request, res: express.Response) => {
 });
 
 server.listen(port, () => {
-    const reviewsService = new ReviewsService();
     console.log(runningMessage);
 });
 

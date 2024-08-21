@@ -99,7 +99,7 @@ export class UsersRoutesConfig extends CommonRoutesConfig {
                 // /users/:userId, not anything beneath it in the hierarchy
 
                 permissionMiddleware.permissionFlagRequired(
-                    PermissionFlag.FREE_PERMISSION
+                    PermissionFlag.ANOTHER_PAID_PERMISSION
                 ),
                 asyncHandler(UsersController.updatePermissionFlags),
             );

@@ -11,8 +11,12 @@ class UsersMiddleware {
         res: express.Response,
         next: express.NextFunction
     ) => {
-        await userService.getUserByEmail(req.body.email).then(() => {
-            res.status(400).send({error: `User email already exists`});
+        await userService.getUserByEmail(req.body.email).then((result) => {
+            if (result) {
+                res.status(400).send({error: `User email already exists`});
+            } else {
+                next();
+            }
         }).catch((error: unknown) => {
             next(error);
         })
@@ -50,19 +54,13 @@ class UsersMiddleware {
         res: express.Response,
         next: express.NextFunction
     ) => {
-        if (req.params.userId) {
-            const user = await userService.readById(req.params.userId);
-            if (user) {
-                res.locals.user = user;
-                next();
-            } else {
-                res.status(404).send({
-                    error: `User ${req.params.userId} not found`,
-                });
-            }
+        const user = await userService.readById(req.params.userId);
+        if (user) {
+            res.locals.user = user;
+            next();
         } else {
-            res.status(400).send({
-                error: `Missing userId`,
+            res.status(404).send({
+                error: `User ${req.params.userId} not found`,
             });
         }
     }

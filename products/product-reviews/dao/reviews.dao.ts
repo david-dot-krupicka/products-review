@@ -1,6 +1,6 @@
-import { CreateReviewDto } from '../dto/create.review.dto';
-import { PatchReviewDto } from '../dto/patch.review.dto';
-import { JobData, JobDataDefinition } from '../../common/types/jobdata';
+import {CreateReviewDto} from '../dto/create.review.dto';
+import {PatchReviewDto} from '../dto/patch.review.dto';
+import {JobData, JobDataDefinition} from '../../common/types/jobdata';
 
 import mongooseService from '../../common/services/mongoose.service';
 import bullmqService from '../../common/services/bullmq.service';
@@ -37,22 +37,12 @@ class ReviewsDao {
         log('Created new instance of ReviewsDao.');
     }
 
-    private async addReviewJob(review: any) {
+    private async addReviewJob(reviewId: string, productId: string) {
         const jobData: JobData = {
             definition: this.JobDefinition,
-            productId: review.productId,
+            productId: productId,
         };
-        await bullmqService.addJob('average-' + review._id, jobData);
-
-        // TODO: delete jobs (completed, failed)...
-        /*
-        log("Getting jobs from the queue");
-        const jobs = bullmqService.getJobs().then(
-            (jobs) => {
-                log(jobs);
-            }
-        );
-        */
+        await bullmqService.addJob('average-' + reviewId, jobData);
     }
 
     async addReview(reviewFields: CreateReviewDto) {
@@ -61,7 +51,7 @@ class ReviewsDao {
                 ...reviewFields,
             });
             await review.save();
-            await this.addReviewJob(review);
+            await this.addReviewJob(review._id.toString(), reviewFields.productId);
 
             return review._id;
         } catch (error) {
@@ -71,18 +61,22 @@ class ReviewsDao {
     }
 
     // TODO: maybe only for debugging?
-    async getReviewById(reviewId: string | number) {
+    async getReviewById(reviewId: string) {
         try {
-            return this.Reviews.findOne({_id: reviewId}).exec();
+            const review = await this.Reviews.findOne({_id: reviewId}).exec();
+            log("Found review: ", review);
+            return review;
         } catch (error) {
             log('Error getting review by id: ', error);
             throw error;
         }
     }
 
-    async getReviewByUserIdProductId(userId: string, productId: string ) {
+    async getReviewByUserIdProductId(userId: string, productId: string) {
         try {
-            return this.Reviews.findOne({userId: userId, productId: productId}).exec();
+            const review = await this.Reviews.findOne({userId: userId, productId: productId}).exec();
+            log("Found review: ", review);
+            return review;
         } catch (error) {
             log('Error getting review by user id and product id: ', error);
             throw error;
@@ -90,29 +84,38 @@ class ReviewsDao {
     }
 
     async updateReviewById(
-        reviewId: string | number,
-        reviewFields: PatchReviewDto
+        reviewId: string,
+        reviewFields: PatchReviewDto,
+        productId: string
     ) {
         try {
+            log(reviewId, reviewFields);
             const review = await this.Reviews.findOneAndUpdate(
                 {_id: reviewId},
                 {$set: reviewFields},
                 {new: true}   // return the updated document
             ).exec();
-            await this.addReviewJob(review);
-            return review;
+            log(review);
+
+            if (review !== null) {
+                await this.addReviewJob(review._id.toString(), productId);
+                return review;
+            }
         } catch (error) {
             log('Error updating review by id: ', error);
             throw error;
         }
     }
 
-    async removeReviewById(reviewId: string | number) {
+    async removeReviewById(reviewId: string, productId: string) {
         try {
             const review = await this.getReviewById(reviewId);
             const deleteResult = await this.Reviews.deleteOne({_id: reviewId}).exec();
-            await this.addReviewJob(review);
-            return deleteResult;
+
+            if (review !== null) {
+                await this.addReviewJob(review._id.toString(), productId);
+                return deleteResult;
+            }
         } catch (error) {
             log('Error removing review by id: ', error);
             throw error;

@@ -63,4 +63,4 @@ class ReviewsService {
     }
 }
 
-export default ReviewsService;
+export default new ReviewsService;

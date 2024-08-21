@@ -25,15 +25,15 @@ class UsersService implements CRUD {
         return UsersDao.getUsers(limit, page);
     }
 
-    async patchById(id: string | number, resource: PatchUserDto) {
+    async patchById(id: string, resource: PatchUserDto) {
         return UsersDao.updateUserById(id, resource);
     }
 
-    async putById(id: string | number, resource: PutUserDto) {
+    async putById(id: string, resource: PutUserDto) {
         return UsersDao.updateUserById(id, resource);
     }
 
-    async deleteById(id: string | number) {
+    async deleteById(id: string) {
         return UsersDao.removeUserById(id);
     }
 }

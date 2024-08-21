@@ -27,8 +27,22 @@ class BullQueueService extends EventEmitter {
                 }
             });
 
-            this.queueEvents.on('completed', this.onJobCompleted.bind(this));
-            this.queueEvents.on('failed', this.onJobFailed.bind(this));
+            this.queueEvents.on('completed', (event) => {
+                this.onJobCompleted(event).then(() => {
+                    log('Job completed');
+                }).catch((error: unknown) => {
+                    log(error);
+                    throw error;
+                });
+            });
+            this.queueEvents.on('failed', (event) => {
+                this.onJobFailed(event).then(() => {
+                    log('Job failed');
+                }).catch((error: unknown) => {
+                    log(error);
+                    throw error;
+                });
+            });
 
         } catch (error) {
             log('Error connecting to Redis', error);
@@ -53,9 +67,9 @@ class BullQueueService extends EventEmitter {
         try {
             const job = await Job.fromId(this.reviewQueue, jobId)
 
-            if (job) {
-                const result: JobResult = job.returnvalue;
-                log(`Job ${job.id} completed with result: ${result.avgRatingRounded}`);
+            if (job?.id !== undefined) {
+                const result: JobResult = job.returnvalue as JobResult;
+                log(`Job ${job.id} completed with result: ${(result.avgRatingRounded).toString()}`);
 
                 // Emit event for product.dao to update the average rating
                 this.emit('jobCompleted', result);
@@ -65,7 +79,7 @@ class BullQueueService extends EventEmitter {
                 log(`Job ${jobId} not found`);
             }
         } catch (error) {
-            log(`Error getting job ${jobId}`, error);
+            log(`Error processing job ${jobId}`, error);
         }
     }
 
@@ -73,7 +87,7 @@ class BullQueueService extends EventEmitter {
         try {
             const job = await Job.fromId(this.reviewQueue, jobId)
 
-            if (job) {
+            if (job?.id !== undefined) {
                 log(`Job ${job.id} failed with reason: ${job.failedReason}`);
                 // We could have also some retry policy set
                 await job.remove();
@@ -81,7 +95,7 @@ class BullQueueService extends EventEmitter {
                 log(`Job ${jobId} not found`);
             }
         } catch (error) {
-            log(`Error getting job ${jobId}`, error);
+            log(`Error processing job ${jobId}`, error);
         }
     }
 }

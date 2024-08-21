@@ -26,11 +26,11 @@ class MongooseService {
             .then(() => {
                 log('MongoDB is connected');
             })
-            .catch((err) => {
+            .catch((err: unknown) => {
                 const retrySeconds = 5;
                 log(
-                    `MongoDB connection failed (will retry #${++this
-                        .count} after ${retrySeconds} seconds:`,
+                    `MongoDB connection failed (will retry #${(++this
+                        .count).toString()} after ${retrySeconds.toString()} seconds:`,
                     err
                 );
                 setTimeout(this.connectWithRetry, retrySeconds * 1000);

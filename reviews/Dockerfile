@@ -11,7 +11,11 @@ ENV GITHUB_MODE $github_mode
 
 WORKDIR /app
 
-ADD . .
+ADD ./src .
+ADD ./eslint.config.mjs .
+ADD ./package.json .
+ADD ./tsconfig.json .
+ADD ./yarn.lock .
 
 RUN yarn install
 

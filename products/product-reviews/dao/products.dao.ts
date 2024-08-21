@@ -24,13 +24,13 @@ class ProductsDao {
         log('Created new instance of ProductsDao.');
 
         bullmqService.on('jobCompleted', (jobResult: JobResult) => {
-            try {
-                this.updateProductById(jobResult._id,
-                    {averageRating: jobResult.avgRatingRounded}
-                ).then(r => log('Updated product: ', r));
-            } catch (error) {
+            const result = this.updateProductById(jobResult._id,
+                {averageRating: jobResult.avgRatingRounded}
+            ).then(() => {
+                log('Updated product with average rating: ', result);
+            }).catch((error: unknown) => {
                 log('Error updating product with average rating: ', error);
-            }
+            });
         });
     }
 
@@ -48,11 +48,13 @@ class ProductsDao {
         }
     }
 
-    async getProductById(productId: string | number) {
+    async getProductById(productId: string) {
         try {
-            return this.Product.findOne({_id: productId})
+            const product = await this.Product.findOne({_id: productId})
                 .select('_id name description price')
                 .exec();
+            log('Found product: ', product);
+            return product;
         } catch (error) {
             log('Error getting product by id: ', error);
             throw error;
@@ -61,7 +63,9 @@ class ProductsDao {
 
     async getProductByName(productName: string) {
         try {
-            return this.Product.findOne({name: productName}).exec();
+            const product = await this.Product.findOne({name: productName}).exec();
+            log('Found product: ', product);
+            return product;
         } catch (error) {
             log('Error getting product by name: ', error);
             throw error;
@@ -71,12 +75,14 @@ class ProductsDao {
     // Pagination
     async getProducts(limit = 25, page = 0) {
         try {
-            return this.Product.find()
+            const products = await this.Product.find()
                 .limit(limit)
                 .skip(limit * page)
                 // TODO: Here we could have a join with reviews collection
                 .select('_id name')
                 .exec();
+            log('Found product list');
+            return products;
         } catch (error) {
             log('Error getting products: ', error);
             throw error;
@@ -84,24 +90,28 @@ class ProductsDao {
     }
 
     async updateProductById(
-        productId: string | number,
+        productId: string,
         productFields: PatchProductDto
     ) {
         try {
-            return await this.Product.findOneAndUpdate(
+            const product = await this.Product.findOneAndUpdate(
                 {_id: productId},
                 {$set: productFields},
                 {new: true}   // return the updated document
             ).exec();
+            log('Updated product: ', product);
+            return product;
         } catch (error) {
             log('Error updating product by id: ', error);
             throw error;
         }
     }
 
-    async removeProductById(productId: string | number) {
+    async removeProductById(productId: string) {
         try {
-            return this.Product.deleteOne({_id: productId}).exec();
+            const result = await this.Product.deleteOne({_id: productId}).exec();
+            log('Removed product: ', productId);
+            return result;
         } catch (error) {
             log('Error removing product by id: ', error);
             throw error;

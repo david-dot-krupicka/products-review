@@ -51,18 +51,11 @@ class UsersController {
 
     updatePermissionFlags = async (req: httpUsers.UpdatePermissionsRequest, res: express.Response) => {
         const permissionFlags = req.params.permissionFlags;
-        const errorMessage = 'Permission flags not defined';
-
-        if (permissionFlags !== undefined) {
-            const patchUserDto: PatchUserDto = {
-                permissionFlags: parseInt(permissionFlags),
-            };
-            log(await usersService.patchById(req.body.id, patchUserDto));
-            res.status(204).send();
-        } else {
-            log(errorMessage);
-            res.status(400).send({ error: errorMessage });
-        }
+        const patchUserDto: PatchUserDto = {
+            permissionFlags: parseInt(permissionFlags),
+        };
+        log(await usersService.patchById(req.body.id, patchUserDto));
+        res.status(204).send();
     }
 }
 

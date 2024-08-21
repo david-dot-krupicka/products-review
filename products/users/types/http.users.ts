@@ -8,19 +8,16 @@ export interface CreateUserRequest extends Request {
         firstName?: string,
         lastName?: string,
         permissionFlags?: number
-        [key: string]: any
     }
 }
 /* -------------------------------------------------------------
    Base types
    ------------------------------------------------------------- */
 interface UserIdParams extends ParamsDictionary {
-    userId?: string
-    [key: string]: any
+    userId: string
 }
 interface UserIdBody {
     id: string
-    [key: string]: any
 }
 /* -------------------------------------------------------------
    Request types
@@ -59,7 +56,7 @@ export interface PatchUserRequest extends UserByIdRequest {
 }
 // -------------------------------------------------------------
 interface UserPermissionParams extends UserIdParams {
-    permissionFlags?: string
+    permissionFlags: string
 }
 export interface UpdatePermissionsRequest extends Request {
     params: UserPermissionParams
