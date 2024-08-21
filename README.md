@@ -27,6 +27,11 @@ RestAPI to handle product reviews.
 * Sharding of reviews to multiple queues
 * Cache implemented only for illustration on GET by ID. Caching lists (or pages) would require more processing and introspection of cached lists.
 
+### Bugs found afterwards
+* User can specify averageRating in create product and it's stored.\
+  When creating or editing reviews, this should be covered, but not in products.\
+  The validation middleware is very permissive.
+
 ## Failures (or let's say TODO's)
 * My original idea was to reuse the users service. But it does not work well and to fine-tune it would take too much time.\
   That's also why I require the `userId` in the Create Review request.\
