@@ -8,10 +8,12 @@ load('ext://restart_process', 'docker_build_with_restart')
 # load('ext://helm_resource', 'helm_resource', 'helm_repo')
 
 k8s_yaml([
+    'deployments/common-env-cfm.yaml',
     'deployments/products.yaml',
     'deployments/mongodb-secret.yaml',
     'deployments/mongodb.yaml',
     'deployments/redis.yaml',
+    'deployments/reviews.yaml',
 ])
 
 """
@@ -26,7 +28,6 @@ helm_resource(
 """
 
 k8s_resource('mongodb', port_forwards='27017')
-# k8s_resource('redis')
 
 # Port-forward services, so you can hit it them locally -- e.g. you
 # can access the 'products' service in your browser at http://localhost:8080
@@ -59,6 +60,7 @@ if not github_mode:
         dir='products',
         resource_deps=['products'],
     )
+    # TODO: Add some tests for review service, too.
 
 """
 local_resource(
@@ -79,7 +81,7 @@ docker_build(
 docker_build_with_restart(
     'products-review/products', 'products',
     build_args={'node_env': 'development', 'debug': 'app*', 'github_mode': '1' if github_mode else ''},
-    entrypoint='npx nodemon ./app.ts',        # TODO: do we need any --ext?
+    entrypoint='npx nodemon ./app.ts',
     live_update=[
         sync('./products', '/app'),
         sync('./products/eslint.config.mjs', '/app/eslint.config.mjs'),
@@ -87,6 +89,19 @@ docker_build_with_restart(
         sync('./products/tsconfig.json', '/app/tsconfig.json'),
         sync('./products/yarn.lock', '/app/yarn.lock'),
         run('cd /app && yarn install', trigger=['./products/package.json', './products/yarn.lock']),
+    ])
+
+docker_build_with_restart(
+    'products-review/reviews', 'reviews',
+    build_args={'node_env': 'development', 'debug': 'app*', 'github_mode': '1' if github_mode else ''},
+    entrypoint='npx nodemon ./app.ts',
+    live_update=[
+        sync('./reviews', '/app'),
+        sync('./reviews/eslint.config.mjs', '/app/eslint.config.mjs'),
+        sync('./reviews/package.json', '/app/package.json'),
+        sync('./reviews/tsconfig.json', '/app/tsconfig.json'),
+        sync('./reviews/yarn.lock', '/app/yarn.lock'),
+        run('cd /app && yarn install', trigger=['./reviews/package.json', './reviews/yarn.lock']),
     ])
 
 # TODO:

@@ -1,32 +1,59 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import * as httpReviews from "../types/http.reviews";
 import reviewsService from '../services/reviews.service';
 import debug from 'debug';
 
 const log: debug.IDebugger = debug('app:reviews-controller');
 
 class ReviewsController {
-    async getReviewById(req: Request, res: Response) {
-        const review = await reviewsService.readById(req.body.reviewId);
-        log("Fetched review");
-        log(review);
-        res.status(200).send(review);
+    static readonly internalErrorMessage: string = 'Internal Server Error';
+
+    getReviewById = async (req: httpReviews.ReviewByIdRequest, res: Response)=> {
+        try {
+            const review = await reviewsService.readById(req.body.reviewId);
+            log("Fetched review");
+            log(review);
+            res.status(200).send(review);
+        } catch (error) {
+            log(error);
+            res.status(500).send(ReviewsController.internalErrorMessage);
+        }
     }
 
-    async createReview(req: Request, res: Response) {
-        const reviewId = await reviewsService.create(req.body);
-        res.status(201).send({ id: reviewId });
+    createReview = async (req: httpReviews.CreateReviewsRequest, res: Response)=> {
+        try {
+            const reviewId = await reviewsService.create(req.body);
+            res.status(201).send({id: reviewId});
+        } catch (error) {
+            log(error);
+            res.status(500).send(ReviewsController.internalErrorMessage);
+        }
     }
 
     // 204 Ref. RFC 7231: https://tools.ietf.org/html/rfc7231#section-6.3.5
-    async patchReview(req: Request, res: Response) {
-        log(await reviewsService.patchById(req.body.reviewId, req.body));
-        res.status(204).send();
+    patchReview = async (req: httpReviews.PatchReviewRequest, res: httpReviews.ReviewLocalsResponse)=> {
+        try {
+            log(await reviewsService.patchById(
+                req.body.reviewId,
+                req.body,
+                res.locals.productId,
+            ));
+            res.status(204).send();
+        } catch (error) {
+            log(error);
+            res.status(500).send(ReviewsController.internalErrorMessage);
+        }
     }
 
     // 204 Ref. RFC 7231: https://tools.ietf.org/html/rfc7231#section-6.3.5
-    async removeReview(req: Request, res: Response) {
-        log(await reviewsService.deleteById(req.body.reviewId));
-        res.status(204).send();
+    removeReview = async (req: httpReviews.ReviewByIdRequest, res: httpReviews.ReviewLocalsResponse)=> {
+        try {
+            log(await reviewsService.deleteById(req.body.reviewId, res.locals.productId,));
+            res.status(204).send();
+        } catch (error) {
+            log(error);
+            res.status(500).send(ReviewsController.internalErrorMessage);
+        }
     }
 }
 

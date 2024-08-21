@@ -2,6 +2,7 @@ import express from 'express';
 import debug from 'debug';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import { Jwt } from '../../common/types/jwt';
 
 const log: debug.IDebugger = debug('app:auth-controller');
 
@@ -11,21 +12,24 @@ const log: debug.IDebugger = debug('app:auth-controller');
  *
  * See .env.example in the repo for the required format.
  */
-// @ts-expect-error
+if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET not set in environment variables');
+}
 const jwtSecret: string = process.env.JWT_SECRET;
 const tokenExpirationInSeconds = 36000;
 
 class AuthController {
-    async createJWT(req: express.Request, res: express.Response) {
+    createJWT = (req: express.Request, res: express.Response) => {
         try {
-            const refreshId = req.body.userId + jwtSecret;
+            const body = req.body as Jwt;
+            const refreshId = body.userId + jwtSecret;
             const salt = crypto.createSecretKey(crypto.randomBytes(16));
             const hash = crypto
                 .createHmac('sha512', salt)
                 .update(refreshId)
                 .digest('base64');
-            req.body.refreshKey = salt.export();
-            const token = jwt.sign(req.body, jwtSecret, {
+            body.refreshKey = salt.export();
+            const token = jwt.sign(body, jwtSecret, {
                 expiresIn: tokenExpirationInSeconds,
             });
             return res

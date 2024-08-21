@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: common-env
+data:
+  REPLICA_COUNT: "5"
+  NODE_ENV: development
+  REDIS_PORT: "6379"
+  REDIS_URL: redis://cache

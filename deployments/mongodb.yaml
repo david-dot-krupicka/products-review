@@ -22,8 +22,7 @@ spec:
         - image: products-review/mongodb
           name: mongo
           ports:
-            - name: http
-              containerPort: 27017
+            - containerPort: 27017
               protocol: TCP
           resources:
             {}

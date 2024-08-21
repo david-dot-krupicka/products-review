@@ -1,18 +1,20 @@
+/* eslint-disable */
+// TODO: Fix this later
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { Jwt } from '../../common/types/jwt';
 import usersService from '../../users/services/users.service';
 
-// @ts-expect-error
+// @ts-expect-error This could fail because JWT_SECRET could be undefined
 const jwtSecret: string = process.env.JWT_SECRET;
 
 class JwtMiddleware {
-    verifyRefreshBodyField(
+    verifyRefreshBodyField = (
         req: express.Request,
         res: express.Response,
         next: express.NextFunction
-    ) {
+    )=> {
         if (req.body?.refreshToken) {
             next(); return;
         } else {
@@ -22,12 +24,12 @@ class JwtMiddleware {
         }
     }
 
-    async validRefreshNeeded(
+    validRefreshNeeded = async (
         req: express.Request,
         res: express.Response,
         next: express.NextFunction
-    ) {
-        const user: any = await usersService.getUserByEmailWithPassword(
+    )=> {
+        const user = await usersService.getUserByEmailWithPassword(
             res.locals.jwt.email
         );
         const salt = crypto.createSecretKey(
@@ -37,7 +39,7 @@ class JwtMiddleware {
             .createHmac('sha512', salt)
             .update(res.locals.jwt.userId + jwtSecret)
             .digest('base64');
-        if (hash === req.body.refreshToken) {
+        if (user && hash === req.body.refreshToken) {
             req.body = {
                 userId: user._id,
                 email: user.email,
@@ -49,11 +51,11 @@ class JwtMiddleware {
         }
     }
 
-    validJWTNeeded(
+    validJWTNeeded = (
         req: express.Request,
         res: express.Response,
         next: express.NextFunction
-    ) {
+    ) => {
         if (req.headers.authorization) {
             try {
                 const authorization = req.headers.authorization.split(' ');
@@ -66,7 +68,7 @@ class JwtMiddleware {
                     ) as Jwt;
                     next();
                 }
-            } catch (err) {
+            } catch {
                 return res.status(403).send();
             }
         } else {

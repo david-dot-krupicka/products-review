@@ -27,12 +27,17 @@ class UsersDao {
         log('Created new instance of UsersDao.');
     }
 
+    getUserModel() {
+        return this.User;
+    }
+
     async addUser(userFields: CreateUserDto) {
         const userId = shortid.generate();
         const user = new this.User({
             _id: userId,
             ...userFields,
-            permissionFlags: PermissionFlag.FREE_PERMISSION,
+            // TODO: FIX, now set this as default
+            permissionFlags: PermissionFlag.ADMIN_PERMISSION,
         });
         await user.save();
         return userId;
@@ -48,7 +53,7 @@ class UsersDao {
             .exec();
     }
 
-    async getUserById(userId: string | number) {
+    async getUserById(userId: string | undefined) {
         return this.User.findOne({ _id: userId }).exec();
     }
 
@@ -61,7 +66,7 @@ class UsersDao {
     }
 
     async updateUserById(
-        userId: string | number,
+        userId: string,
         userFields: PatchUserDto | PutUserDto
     ) {
         const existingUser = await this.User.findOneAndUpdate(
@@ -73,7 +78,7 @@ class UsersDao {
         return existingUser;
     }
 
-    async removeUserById(userId: string | number) {
+    async removeUserById(userId: string) {
         return this.User.deleteOne({ _id: userId }).exec();
     }
 }

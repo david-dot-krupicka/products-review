@@ -1,8 +1,6 @@
 import { PatchUserDto } from '../dto/patch.user.dto';
-// we import express to add types to the request/response objects from our controller functions
+import * as httpUsers from '../types/http.users';
 import express from 'express';
-
-// we import our newly created user services
 import usersService from '../services/users.service';
 
 // we import the argon2 library for password hashing
@@ -14,25 +12,25 @@ import debug from 'debug';
 const log: debug.IDebugger = debug('app:users-controller');
 
 class UsersController {
-    async listUsers(req: express.Request, res: express.Response) {
+    listUsers = async (req: express.Request, res: express.Response) => {
         const users = await usersService.list(100, 0);
         res.status(200).send(users);
     }
 
-    async getUserById(req: express.Request, res: express.Response) {
+    getUserById = async (req: httpUsers.UserByIdRequest, res: express.Response) => {
         const user = await usersService.readById(req.body.id);
         log("Fetched user");
         log(user);
         res.status(200).send(user);
     }
 
-    async createUser(req: express.Request, res: express.Response) {
+    createUser = async (req: httpUsers.CreateUserRequest, res: express.Response) => {
         req.body.password = await argon2.hash(req.body.password);
         const userId = await usersService.create(req.body);
         res.status(201).send({ id: userId });
     }
 
-    async patch(req: express.Request, res: express.Response) {
+    patch = async (req: httpUsers.PatchUserRequest, res: express.Response) => {
         if (req.body.password) {
             req.body.password = await argon2.hash(req.body.password);
         }
@@ -40,20 +38,21 @@ class UsersController {
         res.status(204).send();
     }
 
-    async put(req: express.Request, res: express.Response) {
+    put = async (req: httpUsers.PutUserRequest, res: express.Response) => {
         req.body.password = await argon2.hash(req.body.password);
         log(await usersService.putById(req.body.id, req.body));
         res.status(204).send();
     }
 
-    async removeUser(req: express.Request, res: express.Response) {
+    removeUser = async (req: httpUsers.UserByIdRequest, res: express.Response) => {
         log(await usersService.deleteById(req.body.id));
         res.status(204).send();
     }
 
-    async updatePermissionFlags(req: express.Request, res: express.Response) {
+    updatePermissionFlags = async (req: httpUsers.UpdatePermissionsRequest, res: express.Response) => {
+        const permissionFlags = req.params.permissionFlags;
         const patchUserDto: PatchUserDto = {
-            permissionFlags: parseInt(req.params.permissionFlags),
+            permissionFlags: parseInt(permissionFlags),
         };
         log(await usersService.patchById(req.body.id, patchUserDto));
         res.status(204).send();

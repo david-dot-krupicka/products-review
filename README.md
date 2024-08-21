@@ -7,6 +7,23 @@ RestAPI to handle product reviews.
 3. `cd products-review`
 4. `tilt up`
 
+## Structure
+todo
+
+## How to change the number of review service replicas
+This is a little bit crude. It would be better to use helm charts and different way of pods rollout.
+1. Change the number of `replicas:` in `deployments/reviews.yaml`. 
+   Pods will be redeployed.
+2. Create new copy of `deployments/common-env-cfm.yaml`.
+   1. Change the ConfigMap name.
+   2. Change the `REPLICA_COUNT` value to the new number of replicas.
+   3. Add the new file as `k8s_yaml` to the `Tiltfile`.
+   4. Reference the new ConfigMap in `deployments/products.yaml` (`configMapRef`).
+   5. Reference the new ConfigMap in `deployments/reviews.yaml` (`configMapRef`).
+
+Step 2 will trigger the rebuild of the pods. Node.js will use this environment
+variable as `totalShards` to create appropriate number of BullMQ queues.
+
 ### TODO: deps
 
 

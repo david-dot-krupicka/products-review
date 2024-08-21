@@ -1,5 +1,5 @@
 export interface Jwt {
-    refreshKey: string;
+    refreshKey: Buffer;
     userId: string;
     permissionFlags: string;
 }

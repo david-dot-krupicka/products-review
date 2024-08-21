@@ -1,7 +1,9 @@
 import mongoose from 'mongoose';
 import debug from 'debug';
 
-const log: debug.IDebugger = debug('app:mongoose-service');
+const
+    hostname: string = process.env["HOSTNAME"] || "",
+    log: debug.IDebugger = debug(`app-${hostname}:mongoose-service`);
 
 class MongooseService {
     private count = 0;
@@ -26,11 +28,11 @@ class MongooseService {
             .then(() => {
                 log('MongoDB is connected');
             })
-            .catch((err: unknown) => {
+            .catch((err) => {
                 const retrySeconds = 5;
                 log(
-                    `MongoDB connection failed (will retry #${(++this
-                        .count).toString()} after ${retrySeconds.toString()} seconds:`,
+                    `MongoDB connection failed (will retry #${++this
+                        .count} after ${retrySeconds} seconds:`,
                     err
                 );
                 setTimeout(this.connectWithRetry, retrySeconds * 1000);

@@ -1,37 +1,65 @@
 import { Request, Response } from 'express';
+import * as httpProducts from '../types/http.products';
 import productsService from '../services/products.service';
 import debug from 'debug';
 
 const log: debug.IDebugger = debug('app:products-controller');
 
 class ProductsController {
-    async listProducts(req: Request, res: Response) {
-        const products = await productsService.list(100, 0);
-        res.status(200).send(products);
+    static readonly internalErrorMessage: string = 'Internal Server Error';
+
+    listProducts = async (req: Request, res: Response) => {
+        try {
+            const products = await productsService.list(100, 0);
+            res.status(200).send(products);
+        } catch (error) {
+            log(error);
+            res.status(500).send(ProductsController.internalErrorMessage);
+        }
     }
 
-    async getProductById(req: Request, res: Response) {
-        const product = await productsService.readById(req.body.productId);
-        log("Fetched product");
-        log(product);
-        res.status(200).send(product);
+    getProductById = async (req: httpProducts.ProductByIdRequest, res: Response) =>{
+        try {
+            const product = await productsService.readById(req.body.productId);
+            log("Fetched product");
+            log(product);
+            res.status(200).send(product);
+        } catch (error) {
+            log(error);
+            res.status(500).send(ProductsController.internalErrorMessage);
+        }
     }
 
-    async createProduct(req: Request, res: Response) {
-        const productId = await productsService.create(req.body);
-        res.status(201).send({ id: productId });
+    createProduct = async (req: httpProducts.CreateProductRequest, res: Response)=> {
+        try {
+            const productId = await productsService.create(req.body);
+            res.status(201).send({id: productId});
+        } catch (error) {
+            log(error);
+            res.status(500).send(ProductsController.internalErrorMessage);
+        }
     }
 
     // 204 Ref. RFC 7231: https://tools.ietf.org/html/rfc7231#section-6.3.5
-    async patchProduct(req: Request, res: Response) {
-        log(await productsService.patchById(req.body.productId, req.body));
-        res.status(204).send();
+    patchProduct = async (req: httpProducts.PatchProductRequest, res: Response)=> {
+        try {
+            log(await productsService.patchById(req.body.productId, req.body));
+            res.status(204).send();
+        } catch (error) {
+            log(error);
+            res.status(500).send(ProductsController.internalErrorMessage);
+        }
     }
 
     // 204 Ref. RFC 7231: https://tools.ietf.org/html/rfc7231#section-6.3.5
-    async removeProduct(req: Request, res: Response) {
-        log(await productsService.deleteById(req.body.productId));
-        res.status(204).send();
+    removeProduct = async (req: httpProducts.ProductByIdRequest, res: Response)=> {
+        try {
+            log(await productsService.deleteById(req.body.productId));
+            res.status(204).send();
+        } catch (error) {
+            log(error);
+            res.status(500).send(ProductsController.internalErrorMessage);
+        }
     }
 }
 

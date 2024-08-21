@@ -3,4 +3,5 @@ export interface PatchProductDto {
     description?: string;
     price?: number;
     // No list of reviews here
+    averageRating?: number;
 }

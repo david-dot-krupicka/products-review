@@ -8,7 +8,7 @@ class ProductsService implements CRUD {
         return ProductsDao.addProduct(resource);
     }
 
-    async readById(id: string | number) {
+    async readById(id: string) {
         return ProductsDao.getProductById(id);
     }
 
@@ -20,11 +20,11 @@ class ProductsService implements CRUD {
         return ProductsDao.getProducts(limit, page);
     }
 
-    async patchById(id: string | number, resource: PatchProductDto) {
+    async patchById(id: string, resource: PatchProductDto) {
         return ProductsDao.updateProductById(id, resource);
     }
 
-    async deleteById(id: string | number) {
+    async deleteById(id: string) {
         return ProductsDao.removeProductById(id);
     }
 }

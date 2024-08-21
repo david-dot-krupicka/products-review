@@ -5,6 +5,7 @@ if (dotenvResult.error) {
 }
 
 import express from "express";
+import bodyParser from "body-parser";
 
 import * as expressWinston from "express-winston";
 import * as http from "http";
@@ -24,6 +25,8 @@ const app: express.Application = express(),
       server: http.Server = http.createServer(app),
       debugLog: debug.IDebugger = debug("app");
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 // here we are adding middleware to parse all incoming requests as JSON
 app.use(express.json());
 

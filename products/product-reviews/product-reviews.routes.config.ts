@@ -1,4 +1,5 @@
 import { Application } from "express";
+import AsyncHandler from "express-async-handler";
 import { CommonRoutesConfig } from "../common/common.routes.config";
 import ProductsController from "./controllers/products.controller";
 import ProductsMiddleware from "./middleware/products.middleware";
@@ -13,22 +14,25 @@ export class ProductReviewsRoutesConfig extends CommonRoutesConfig {
     protected configureRoutes() {
         // TODO: middleware require valid JWT token and decoded userId to create a review
         this.app.route(`/products`)
-            .get(ProductsController.listProducts)
+            .get(AsyncHandler(ProductsController.listProducts))
             .post(
-                ProductsMiddleware.validateRequiredProductBodyFields,
-                ProductsMiddleware.validateProductWithSameNameExists,
-                ProductsController.createProduct
+                AsyncHandler(ProductsMiddleware.validateRequiredProductBodyFields),
+                AsyncHandler(ProductsMiddleware.validateProductWithSameNameExists),
+                AsyncHandler(ProductsController.createProduct)
             );
 
         this.app.param(`productId`, ProductsMiddleware.extractProductId);
         this.app
             .route(`/products/:productId`)
-            .all(ProductsMiddleware.validateProductExists)
-            .get(ProductsController.getProductById)
-            .delete(ProductsController.removeProduct)
+            .all(AsyncHandler(
+                ProductsMiddleware.validateProductExists))
+            .get(AsyncHandler(
+                ProductsController.getProductById))
+            .delete(AsyncHandler(
+                ProductsController.removeProduct))
             .patch(
-                ProductsMiddleware.validatePatchProductName,
-                ProductsController.patchProduct
+                AsyncHandler(ProductsMiddleware.validatePatchProductName),
+                AsyncHandler(ProductsController.patchProduct)
             );
 
         // TODO: This is for product controllers
@@ -41,21 +45,24 @@ export class ProductReviewsRoutesConfig extends CommonRoutesConfig {
         this.app.route(`/reviews`)
             // TODO: userId from JWT
             .post(
-                ProductsMiddleware.validateProductExists,
-                ReviewsMiddleware.validateUserReviewForProductExists,
-                ReviewsController.createReview
+                AsyncHandler(ProductsMiddleware.validateProductExists),
+                AsyncHandler(ReviewsMiddleware.validateUserReviewForProductExists),
+                AsyncHandler(ReviewsController.createReview)
             );
 
         this.app.param(`reviewId`, ReviewsMiddleware.extractReviewId);
         this.app
             .route(`/reviews/:reviewId`)
-            // TODO: productId required in the request body
-            .all(ReviewsMiddleware.validateReviewExists)
-            .get(ReviewsController.getReviewById)
-            .delete(ReviewsController.removeReview)
+            .all(AsyncHandler(
+                ReviewsMiddleware.validateReviewExists))
+            .get(AsyncHandler(
+                ReviewsController.getReviewById))
+            .delete(AsyncHandler(
+                ReviewsController.removeReview))
             .patch(
-                ReviewsMiddleware.filterDtoFields,
-                ReviewsController.patchReview
+                AsyncHandler(ReviewsMiddleware.saveProductId),
+                AsyncHandler(ReviewsMiddleware.filterDtoFields),
+                AsyncHandler(ReviewsController.patchReview)
             );
 
         return this.app;
