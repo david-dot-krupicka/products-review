@@ -5,6 +5,7 @@ import ProductsController from "./controllers/products.controller";
 import ProductsMiddleware from "./middleware/products.middleware";
 import ReviewsController from "./controllers/reviews.controller";
 import ReviewsMiddleware from "./middleware/reviews.middleware";
+import CacheMiddleware from './middleware/cache.middleware';
 
 export class ProductReviewsRoutesConfig extends CommonRoutesConfig {
     constructor(app: Application) {
@@ -14,7 +15,10 @@ export class ProductReviewsRoutesConfig extends CommonRoutesConfig {
     protected configureRoutes() {
         // TODO: middleware require valid JWT token and decoded userId to create a review
         this.app.route(`/products`)
-            .get(AsyncHandler(ProductsController.listProducts))
+            .get(
+                // AsyncHandler(CacheMiddleware.checkCacheList), not implemented
+                AsyncHandler(ProductsController.listProducts)
+            )
             .post(
                 AsyncHandler(ProductsMiddleware.validateRequiredProductBodyFields),
                 AsyncHandler(ProductsMiddleware.validateProductWithSameNameExists),
@@ -24,19 +28,19 @@ export class ProductReviewsRoutesConfig extends CommonRoutesConfig {
         this.app.param(`productId`, ProductsMiddleware.extractProductId);
         this.app
             .route(`/products/:productId`)
-            .all(AsyncHandler(
-                ProductsMiddleware.validateProductExists))
-            .get(AsyncHandler(
-                ProductsController.getProductById))
-            .delete(AsyncHandler(
-                ProductsController.removeProduct))
+            .all(AsyncHandler(ProductsMiddleware.validateProductExists))
+            .get(
+                AsyncHandler(CacheMiddleware.checkCache),
+                AsyncHandler(ProductsController.getProductById)
+            )
+            .delete(AsyncHandler(ProductsController.removeProduct))
             .patch(
                 AsyncHandler(ProductsMiddleware.validatePatchProductName),
                 AsyncHandler(ProductsController.patchProduct)
             );
 
-        // TODO: This is for product controllers
-        // TODO: Although list in CRUD interface must be implemented in the service
+        // TODO: This route is not implemented, although doable
+        // TODO: User can list reviews by product id in GET /reviews route
         /*this.app
             .route(`/products/:productId/reviews`)
             .all(ProductsMiddleware.validateProductExists)
@@ -57,12 +61,13 @@ export class ProductReviewsRoutesConfig extends CommonRoutesConfig {
         this.app.param(`reviewId`, ReviewsMiddleware.extractReviewId);
         this.app
             .route(`/reviews/:reviewId`)
-            .all(AsyncHandler(
-                ReviewsMiddleware.validateReviewExists))
-            .get(AsyncHandler(
-                ReviewsController.getReviewById))
-            .delete(AsyncHandler(
-                ReviewsController.removeReview))
+            .all(
+                AsyncHandler(ReviewsMiddleware.validateReviewExists))
+            .get(
+                AsyncHandler(CacheMiddleware.checkCache),
+                AsyncHandler(ReviewsController.getReviewById)
+            )
+            .delete(AsyncHandler(ReviewsController.removeReview))
             .patch(
                 AsyncHandler(ReviewsMiddleware.saveProductId),
                 AsyncHandler(ReviewsMiddleware.filterDtoFields),

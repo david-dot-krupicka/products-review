@@ -81,7 +81,7 @@ docker_build(
 docker_build_with_restart(
     'products-review/products', 'products',
     build_args={'node_env': 'development', 'debug': 'app*', 'github_mode': '1' if github_mode else ''},
-    entrypoint='npx nodemon ./app.ts',
+    entrypoint='redis-server --daemonize yes && npx nodemon ./app.ts',
     live_update=[
         sync('./products', '/app'),
         sync('./products/eslint.config.mjs', '/app/eslint.config.mjs'),

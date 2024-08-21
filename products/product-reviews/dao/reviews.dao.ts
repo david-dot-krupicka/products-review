@@ -93,8 +93,7 @@ class ReviewsDao {
 
     async updateReviewById(
         reviewId: string,
-        reviewFields: PatchReviewDto,
-        productId: string
+        reviewFields: PatchReviewDto
     ) {
         try {
             log(reviewId, reviewFields);
@@ -105,8 +104,11 @@ class ReviewsDao {
             ).exec();
             log(review);
 
-            if (review !== null) {
-                await this.addReviewJob(review._id.toString(), productId);
+            if (review?.productId) {
+                await this.addReviewJob(
+                    review._id.toString(),
+                    review.productId.toString()
+                );
                 return review;
             }
         } catch (error) {
@@ -115,14 +117,16 @@ class ReviewsDao {
         }
     }
 
-    async removeReviewById(reviewId: string, productId: string) {
+    async removeReviewById(reviewId: string) {
         try {
             const review = await this.getReviewById(reviewId);
-            const deleteResult = await this.Reviews.deleteOne({_id: reviewId}).exec();
+            await this.Reviews.deleteOne({_id: reviewId}).exec();
 
-            if (review !== null) {
+            if (review?.productId) {
+                const productId = review.productId.toString();
                 await this.addReviewJob(review._id.toString(), productId);
-                return deleteResult;
+                // return productId to invalidate cache
+                return productId;
             }
         } catch (error) {
             log('Error removing review by id: ', error);
