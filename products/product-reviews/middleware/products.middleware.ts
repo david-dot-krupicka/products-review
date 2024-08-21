@@ -21,13 +21,17 @@ class ProductsMiddleware {
         res: Response,
         next: NextFunction
     )=> {
-        const product = await productsService.readById(req.body.productId);
-        if (product) {
-            next();
+        if (req.body.productId) {
+            const product = await productsService.readById(req.body.productId);
+            if (product) {
+                next();
+            } else {
+                res.status(404).send({
+                    error: `Product ${req.body.productId} not found`,
+                });
+            }
         } else {
-            res.status(404).send({
-                error: `Product ${req.body.productId} not found`,
-            });
+            next();
         }
     }
 

@@ -2,6 +2,7 @@ import { Response } from 'express';
 import * as httpReviews from "../types/http.reviews";
 import reviewsService from '../services/reviews.service';
 import debug from 'debug';
+import {ProductByIdBodyRequest} from "../types/http.products";
 
 const log: debug.IDebugger = debug('app:reviews-controller');
 
@@ -14,6 +15,16 @@ class ReviewsController {
             log("Fetched review");
             log(review);
             res.status(200).send(review);
+        } catch (error) {
+            log(error);
+            res.status(500).send(ReviewsController.internalErrorMessage);
+        }
+    }
+
+    listReviewsByProductId = async (req: httpReviews.ReviewsByProductIdBodyRequest, res: Response)=> {
+        try {
+            const reviews = await reviewsService.list(100, 0, req.body.productId);
+            res.status(200).send(reviews);
         } catch (error) {
             log(error);
             res.status(500).send(ReviewsController.internalErrorMessage);

@@ -44,6 +44,10 @@ export class ProductReviewsRoutesConfig extends CommonRoutesConfig {
 
         this.app.route(`/reviews`)
             // TODO: userId from JWT
+            .get(
+                AsyncHandler(ProductsMiddleware.validateProductExists),
+                AsyncHandler(ReviewsController.listReviewsByProductId)
+            )
             .post(
                 AsyncHandler(ProductsMiddleware.validateProductExists),
                 AsyncHandler(ReviewsMiddleware.validateUserReviewForProductExists),

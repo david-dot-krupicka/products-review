@@ -30,9 +30,6 @@ class ReviewsDao {
         ratingFieldName: 'rating',
     }
 
-    // TODO: test only, should be more queues based on totalShards count
-    //Queue = bullmqService.getQueues();
-
     constructor() {
         log('Created new instance of ReviewsDao.');
     }
@@ -60,7 +57,20 @@ class ReviewsDao {
         }
     }
 
-    // TODO: maybe only for debugging?
+    async listReviews(limit = 25, page = 0, productId: string | undefined) {
+        try {
+            const query = productId ? {productId: productId} : {};
+            const reviews = await this.Reviews.find(query)
+                .limit(limit)
+                .skip(limit * page)
+                .exec();
+            return reviews;
+        } catch (error) {
+            log('Error listing reviews: ', error);
+            throw error;
+        }
+    }
+
     async getReviewById(reviewId: string) {
         try {
             const review = await this.Reviews.findOne({_id: reviewId}).exec();

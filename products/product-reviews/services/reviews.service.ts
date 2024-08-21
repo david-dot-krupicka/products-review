@@ -8,6 +8,10 @@ class ReviewsService implements CRUD {
         return ReviewsDao.addReview(resource);
     }
 
+    async list(limit: number, page: number, id: string | undefined) {
+        return ReviewsDao.listReviews(limit, page, id);
+    }
+
     async readById(id: string) {
         return ReviewsDao.getReviewById(id);
     }
