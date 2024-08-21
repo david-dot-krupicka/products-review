@@ -41,6 +41,8 @@ app.get("/", (req: express.Request, res: express.Response) => {
 
 server.listen(port, () => {
     console.log(runningMessage);
+    const service = new ReviewsService();
+    service.test();
 });
 
 export { app, server };

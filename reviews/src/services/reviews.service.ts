@@ -10,12 +10,13 @@ const
 class ReviewsService {
     private worker!: Worker<JobData>;
     private mongoose = mongooseService.getMongoose();
+    // We have the hostnames set for this purpose
+    private queueName = process.env["HOSTNAME"] ?? "reviews-0";
 
     constructor() {
-        log('Created new instance of ReviewsService.');
         try {
             this.worker = new Worker<JobData>(
-                'reviewQueue',
+                this.queueName,
                 async (job: Job<JobData>) => {
                     log(`Processing job ${job.id} of type ${job.name}`);
 
@@ -29,9 +30,14 @@ class ReviewsService {
                     }
                 }
             );
+            log('Creating new instance of ReviewsService. Listening to queue', this.queueName);
         } catch (error) {
             log('Error connecting to Redis', error);
         }
+    }
+
+    test() {
+        log('Test method called');
     }
 
     private async calculateAverageRating(definition: JobDataDefinition, productId: string) {
@@ -63,4 +69,4 @@ class ReviewsService {
     }
 }
 
-export default new ReviewsService;
+export default ReviewsService;

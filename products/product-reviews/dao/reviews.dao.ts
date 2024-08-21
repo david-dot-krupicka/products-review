@@ -64,7 +64,6 @@ class ReviewsDao {
     async getReviewById(reviewId: string) {
         try {
             const review = await this.Reviews.findOne({_id: reviewId}).exec();
-            log("Found review: ", review);
             return review;
         } catch (error) {
             log('Error getting review by id: ', error);
@@ -75,7 +74,6 @@ class ReviewsDao {
     async getReviewByUserIdProductId(userId: string, productId: string) {
         try {
             const review = await this.Reviews.findOne({userId: userId, productId: productId}).exec();
-            log("Found review: ", review);
             return review;
         } catch (error) {
             log('Error getting review by user id and product id: ', error);
