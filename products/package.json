@@ -4,7 +4,7 @@
   "main": "app.ts",
   "license": "MIT",
   "scripts": {
-    "test": "npx mocha -r ts-node/register 'tests/**/*.ts' --exit"
+    "test": "yarn install && npx mocha -r ts-node/register 'tests/**/*.ts' --exit"
   },
   "dependencies": {
     "argon2": "^0.40.3",

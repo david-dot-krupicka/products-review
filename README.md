@@ -4,11 +4,30 @@ RestAPI to handle product reviews.
 ## Quick start
 1. Install docker, kubectl, [k3d](https://k3d.io/v5.7.3/#install-script)
 2. Install [tilt](https://github.com/windmilleng/tilt#installing), hopefully it will be enough to go
-2. `git clone https://github.com/david-dot-krupicka/products-review.git`
-3. `cd products-review`
-4. `tilt up`
+3. `git clone https://github.com/david-dot-krupicka/products-review.git`
+4. `cd products-review`
+5.  `./k3d-with-registry.sh`
+    - this will spin up k3d cluster with local registry
+6. `cp ./products/.env.example ./products/.env`
+    - required for users service, creating own `JWT_SECRET` is strongly recommended
+    - I won't include any workaround if the `.env` is not present, as it's crucial for security
+    - TODO: users service can be otherwise ignored, it's not integrated and does not work well
+7. `tilt up`
+8. The service should be available on `http://localhost:8000`
 
-### Notes:
+### Setup troubleshooting
+* On Windows, user would have to find his own way to spin up k3d cluster with registry.\
+  Or to execute [this shell script](k3d-with-registry.sh) in WSL. This and the setup was made for MacOS/Linux.
+* Ensure your docker is running.
+* This may not work on VirtualBox.
+* kubectl install [on Amazon](https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html#kubectl-install-update) - follow it for your system
+* k3d\
+  `wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash`
+* tilt\
+  `curl -fsSL https://raw.githubusercontent.com/tilt-dev/tilt/master/scripts/install.sh | bash`
+* If you have issues with Tilt, try to run `tilt down` and `tilt up` again.
+
+## Notes:
 * As I am learning the whole concept of REST API in node-ts,
   I used [a guide for Users REST API from Marcos Henrique da Silva](https://www.toptal.com/express-js/nodejs-typescript-rest-api-pt-1).
 * I like it uses a robust, I would say desired, structure and I will reuse some parts of it.\
@@ -27,6 +46,11 @@ RestAPI to handle product reviews.
 * Sharding of reviews to multiple queues
 * Cache implemented only for illustration on GET by ID. Caching lists (or pages) would require more processing and introspection of cached lists.
 
+### Bugs found afterwards
+* User can specify averageRating in create product, and it's stored.\
+  When creating or editing reviews, there is a whitelist of editable fields, but not in products.\
+  The validation middleware is very permissive.
+
 ## Failures (or let's say TODO's)
 * My original idea was to reuse the users service. But it does not work well and to fine-tune it would take too much time.\
   That's also why I require the `userId` in the Create Review request.\
@@ -44,6 +68,8 @@ RestAPI to handle product reviews.
 * There is no `src` in `product-reviews`. During the development, I had an issue with Dockerfile context,\
   so I moved `src` to the root of the project. I did not have time to fix it.
 * Add BullMQ Dashboard to the project.
+* Switch to OAuth2 for users service.
+* Use Amazon SQS for the message queue.
 
 ## Infrastructure
 * One pod for Products and Review API, with local Redis cache
