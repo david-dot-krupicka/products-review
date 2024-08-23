@@ -103,7 +103,7 @@ variable as `totalShards` to create appropriate number of BullMQ queues.
 This endpoint can be more or less ignored (although it took significant time to fix all linter errors there).\
 It does not work well... :-/\
 If someone wants to try:
-1. make your own `users/.env`, the example is in `users/.env.example`
+1. make your own `products/.env`, the example is in `products/.env.example`
 2. create your user with POST /users
 3. register your user to create JWT tokens
 4. set it in Postman environment and play
